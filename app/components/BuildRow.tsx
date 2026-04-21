@@ -28,7 +28,10 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   const lowQuantities = rangeInclusive(0, lowMaxQuantity);
   const hyperQuantities = rangeInclusive(0, hyperMaxQuantity);
 
-  const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
+  const [selectedCell, setSelectedCell] = useState<SelectedCell | null>({
+    lowQuantity: lowMaxQuantity,
+    hyperQuantity: hyperMaxQuantity,
+  });
 
   const updateField = <Key extends keyof Build>(field: Key, value: Build[Key]) => {
     onChange({ ...build, [field]: value });

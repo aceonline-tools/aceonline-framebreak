@@ -72,7 +72,7 @@ describe("BuildRow", () => {
     expect(handleRemove).toHaveBeenCalled();
   });
 
-  test("opens the breakdown panel when a table cell is clicked and closes it when clicked again", async () => {
+  test("opens the breakdown at the max-quantity cell by default and toggles on click", async () => {
     const buildWithEnchantsSelected = {
       ...defaultAGearBuild,
       prefixId: "prefix-13",
@@ -89,17 +89,20 @@ describe("BuildRow", () => {
       />
     );
 
-    expect(screen.queryByTestId("cell-breakdown")).toBeNull();
+    const initialBreakdown = screen.getByTestId("cell-breakdown");
+    expect(initialBreakdown).toBeInTheDocument();
+    // default selected cell is (low=10, hyper=6)
+    expect(initialBreakdown).toHaveTextContent("Low × 10, Hyper × 6");
 
     const firstBodyRow = within(screen.getByRole("table")).getAllByRole("row")[1];
     const firstDataCell = within(firstBodyRow).getAllByRole("cell")[0];
     const firstCellButton = within(firstDataCell).getByRole("button");
 
     await userEvent.click(firstCellButton);
-    const breakdown = screen.getByTestId("cell-breakdown");
-    expect(breakdown).toBeInTheDocument();
-    expect(breakdown).toHaveTextContent("Prefix -13%");
-    expect(breakdown).toHaveTextContent("Suffix -14%");
+    const switchedBreakdown = screen.getByTestId("cell-breakdown");
+    expect(switchedBreakdown).toHaveTextContent("Low × 0, Hyper × 0");
+    expect(switchedBreakdown).toHaveTextContent("Prefix -13%");
+    expect(switchedBreakdown).toHaveTextContent("Suffix -14%");
 
     await userEvent.click(firstCellButton);
     expect(screen.queryByTestId("cell-breakdown")).toBeNull();
