@@ -60,10 +60,6 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         />
       </div>
 
-      <div className="hidden w-40 items-center justify-center rounded border border-dashed border-neutral-300 text-sm text-neutral-400 sm:flex">
-        image
-      </div>
-
       <div className="flex flex-1 items-center justify-center gap-2 sm:flex-col sm:justify-center">
         <span data-testid="bullets-per-second" className="text-4xl font-semibold tabular-nums">
           {formattedBullets}
