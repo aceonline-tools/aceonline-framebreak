@@ -309,8 +309,8 @@ function rangeInclusive(startInclusive: number, endInclusive: number): number[] 
 }
 
 function isNearRoundNumber(value: number): boolean {
-  const distanceToNearestInteger = Math.abs(value - Math.round(value));
-  return distanceToNearestInteger < NEAR_ROUND_THRESHOLD;
+  const fractionAboveInteger = value - Math.floor(value);
+  return fractionAboveInteger < NEAR_ROUND_THRESHOLD;
 }
 
 type StackedSelectProps = {
