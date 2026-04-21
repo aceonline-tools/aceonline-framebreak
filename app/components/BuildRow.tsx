@@ -85,79 +85,101 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
       </div>
 
       <div className="flex flex-col items-start gap-3 overflow-x-auto">
-        <table className="border-separate border-spacing-0 text-sm tabular-nums">
-          <thead>
-            <tr>
-              <th className="sticky left-0 z-10 bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500">
-                hyper \ low
-              </th>
-              {lowQuantities.map(lowQuantity => (
+        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm ring-1 ring-neutral-100">
+          <table className="border-separate border-spacing-0 text-sm tabular-nums">
+            <thead>
+              <tr>
                 <th
-                  key={lowQuantity}
-                  className="bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500"
+                  scope="col"
+                  className="sticky left-0 z-20 border-b border-r border-neutral-200 bg-neutral-100 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-500"
                 >
-                  {lowQuantity}
+                  <span className="text-neutral-400">hyper</span>
+                  <span className="px-1 text-neutral-300">╱</span>
+                  <span className="text-neutral-400">low</span>
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {hyperQuantities.map(hyperQuantity => (
-              <tr key={hyperQuantity}>
-                <th className="sticky left-0 z-10 bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500">
-                  {hyperQuantity}
-                </th>
-                {lowQuantities.map(lowQuantity => {
-                  const bulletsPerSecond = gearData.calculateBulletsPerSecond(
-                    build,
-                    gearData,
-                    lowQuantity,
-                    hyperQuantity,
-                  );
-                  const isFiniteValue = Number.isFinite(bulletsPerSecond);
-                  const displayValue = isFiniteValue ? bulletsPerSecond.toFixed(2) : "—";
-                  const isNearRound = isFiniteValue && isNearRoundNumber(bulletsPerSecond);
-                  const isSelected =
-                    !!selectedCell &&
-                    selectedCell.lowQuantity === lowQuantity &&
-                    selectedCell.hyperQuantity === hyperQuantity;
-
-                  const cellClassName = [
-                    "border border-neutral-200 p-0",
-                    isSelected
-                      ? "bg-sky-200 ring-2 ring-sky-500"
-                      : isNearRound
-                        ? "bg-amber-100"
-                        : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ");
-
-                  const buttonClassName = [
-                    "w-full px-2 py-1 text-center transition hover:bg-neutral-100",
-                    isNearRound && !isSelected ? "font-bold text-amber-900" : "",
-                    isSelected ? "font-semibold text-sky-900" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ");
-
-                  return (
-                    <td key={lowQuantity} className={cellClassName}>
-                      <button
-                        type="button"
-                        onClick={() => toggleCellSelection({ lowQuantity, hyperQuantity })}
-                        aria-pressed={isSelected}
-                        className={buttonClassName}
-                      >
-                        {displayValue}
-                      </button>
-                    </td>
-                  );
-                })}
+                {lowQuantities.map(lowQuantity => (
+                  <th
+                    key={lowQuantity}
+                    scope="col"
+                    className="border-b border-neutral-200 bg-neutral-100 px-3 py-2 text-center text-xs font-semibold text-neutral-600"
+                  >
+                    {lowQuantity}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {hyperQuantities.map((hyperQuantity, rowIndex) => {
+                const isLastRow = rowIndex === hyperQuantities.length - 1;
+                return (
+                  <tr key={hyperQuantity} className={rowIndex % 2 === 0 ? "bg-white" : "bg-neutral-50/60"}>
+                    <th
+                      scope="row"
+                      className={
+                        "sticky left-0 z-10 border-r border-neutral-200 bg-neutral-100 px-3 py-2 text-center text-xs font-semibold text-neutral-600 " +
+                        (isLastRow ? "" : "border-b")
+                      }
+                    >
+                      {hyperQuantity}
+                    </th>
+                    {lowQuantities.map((lowQuantity, colIndex) => {
+                      const bulletsPerSecond = gearData.calculateBulletsPerSecond(
+                        build,
+                        gearData,
+                        lowQuantity,
+                        hyperQuantity,
+                      );
+                      const isFiniteValue = Number.isFinite(bulletsPerSecond);
+                      const displayValue = isFiniteValue ? bulletsPerSecond.toFixed(2) : "—";
+                      const isNearRound = isFiniteValue && isNearRoundNumber(bulletsPerSecond);
+                      const isSelected =
+                        !!selectedCell &&
+                        selectedCell.lowQuantity === lowQuantity &&
+                        selectedCell.hyperQuantity === hyperQuantity;
+                      const isLastCol = colIndex === lowQuantities.length - 1;
+
+                      const cellClassName = [
+                        "relative p-0",
+                        isLastRow ? "" : "border-b border-neutral-200",
+                        isLastCol ? "" : "border-r border-neutral-200",
+                        isSelected
+                          ? "bg-sky-100 ring-2 ring-inset ring-sky-500"
+                          : isNearRound
+                            ? "bg-amber-50"
+                            : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ");
+
+                      const buttonClassName = [
+                        "w-full cursor-pointer px-3 py-2 text-center transition-colors",
+                        !isSelected && "hover:bg-sky-50",
+                        isNearRound && !isSelected && "font-semibold text-amber-700",
+                        isSelected && "font-bold text-sky-900",
+                        !isNearRound && !isSelected && "text-neutral-700",
+                      ]
+                        .filter(Boolean)
+                        .join(" ");
+
+                      return (
+                        <td key={lowQuantity} className={cellClassName}>
+                          <button
+                            type="button"
+                            onClick={() => toggleCellSelection({ lowQuantity, hyperQuantity })}
+                            aria-pressed={isSelected}
+                            className={buttonClassName}
+                          >
+                            {displayValue}
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
         {selectedCell && (
           <CellBreakdown
