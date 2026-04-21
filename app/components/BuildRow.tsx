@@ -145,7 +145,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                         isSelected
                           ? "bg-sky-100 ring-2 ring-inset ring-sky-500"
                           : isNearRound
-                            ? "bg-amber-50"
+                            ? "bg-amber-200 ring-1 ring-inset ring-amber-400"
                             : "",
                       ]
                         .filter(Boolean)
@@ -153,8 +153,9 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
 
                       const buttonClassName = [
                         "w-full cursor-pointer px-3 py-2 text-center transition-colors",
-                        !isSelected && "hover:bg-sky-50",
-                        isNearRound && !isSelected && "font-semibold text-amber-700",
+                        !isSelected && !isNearRound && "hover:bg-sky-50",
+                        !isSelected && isNearRound && "hover:bg-amber-300",
+                        isNearRound && !isSelected && "font-bold text-amber-900",
                         isSelected && "font-bold text-sky-900",
                         !isNearRound && !isSelected && "text-neutral-700",
                       ]
