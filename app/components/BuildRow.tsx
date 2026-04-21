@@ -143,9 +143,9 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                         isLastRow ? "" : "border-b border-neutral-200",
                         isLastCol ? "" : "border-r border-neutral-200",
                         isSelected
-                          ? "bg-sky-100 ring-2 ring-inset ring-sky-500"
+                          ? "bg-sky-500"
                           : isNearRound
-                            ? "bg-amber-200 ring-1 ring-inset ring-amber-400"
+                            ? "bg-amber-200"
                             : "",
                       ]
                         .filter(Boolean)
@@ -156,7 +156,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                         !isSelected && !isNearRound && "hover:bg-sky-50",
                         !isSelected && isNearRound && "hover:bg-amber-300",
                         isNearRound && !isSelected && "font-bold text-amber-900",
-                        isSelected && "font-bold text-sky-900",
+                        isSelected && "font-bold text-white",
                         !isNearRound && !isSelected && "text-neutral-700",
                       ]
                         .filter(Boolean)
