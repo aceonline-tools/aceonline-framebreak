@@ -59,25 +59,25 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
           <thead>
             <tr>
               <th className="sticky left-0 z-10 bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500">
-                low \ hyper
+                hyper \ low
               </th>
-              {hyperQuantities.map(hyperQuantity => (
+              {lowQuantities.map(lowQuantity => (
                 <th
-                  key={hyperQuantity}
+                  key={lowQuantity}
                   className="bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500"
                 >
-                  {hyperQuantity}
+                  {lowQuantity}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {lowQuantities.map(lowQuantity => (
-              <tr key={lowQuantity}>
+            {hyperQuantities.map(hyperQuantity => (
+              <tr key={hyperQuantity}>
                 <th className="sticky left-0 z-10 bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500">
-                  {lowQuantity}
+                  {hyperQuantity}
                 </th>
-                {hyperQuantities.map(hyperQuantity => {
+                {lowQuantities.map(lowQuantity => {
                   const bulletsPerSecond = gearData.calculateBulletsPerSecond(
                     build,
                     gearData,
@@ -89,7 +89,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                   const isNearRound = isFinite && isNearRoundNumber(bulletsPerSecond);
                   return (
                     <td
-                      key={hyperQuantity}
+                      key={lowQuantity}
                       className={
                         "border border-neutral-200 px-2 py-1 text-center " +
                         (isNearRound ? "bg-amber-100 font-bold text-amber-900" : "")

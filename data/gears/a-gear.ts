@@ -23,7 +23,7 @@ export const aGearData: GearData = {
   ],
   hyperCards: [
     { id: "none",       name: "(none)",         value:  0,    maxQuantity: 0 },
-    { id: "hyper-card", name: "Hyper Card -3%", value: -0.03, maxQuantity: 7 },
+    { id: "hyper-card", name: "Hyper Card -3%", value: -0.03, maxQuantity: 6 },
   ],
   calculateBulletsPerSecond: (build, data, lowQuantity, hyperQuantity) =>
     calculateBulletsPerSecondForAGear(build, data, lowQuantity, hyperQuantity),
