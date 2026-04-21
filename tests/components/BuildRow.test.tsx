@@ -71,4 +71,37 @@ describe("BuildRow", () => {
     await userEvent.click(screen.getByRole("button", { name: /remove/i }));
     expect(handleRemove).toHaveBeenCalled();
   });
+
+  test("opens the breakdown panel when a table cell is clicked and closes it when clicked again", async () => {
+    const buildWithEnchantsSelected = {
+      ...defaultAGearBuild,
+      prefixId: "prefix-13",
+      suffixId: "suffix-14",
+      lowCardId: "low-card",
+      hyperCardId: "hyper-card",
+    };
+    render(
+      <BuildRow
+        build={buildWithEnchantsSelected}
+        gearData={aGearData}
+        onChange={() => {}}
+        onRemove={() => {}}
+      />
+    );
+
+    expect(screen.queryByTestId("cell-breakdown")).toBeNull();
+
+    const firstBodyRow = within(screen.getByRole("table")).getAllByRole("row")[1];
+    const firstDataCell = within(firstBodyRow).getAllByRole("cell")[0];
+    const firstCellButton = within(firstDataCell).getByRole("button");
+
+    await userEvent.click(firstCellButton);
+    const breakdown = screen.getByTestId("cell-breakdown");
+    expect(breakdown).toBeInTheDocument();
+    expect(breakdown).toHaveTextContent("Prefix -13%");
+    expect(breakdown).toHaveTextContent("Suffix -14%");
+
+    await userEvent.click(firstCellButton);
+    expect(screen.queryByTestId("cell-breakdown")).toBeNull();
+  });
 });
