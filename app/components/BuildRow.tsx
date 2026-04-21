@@ -25,9 +25,13 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-neutral-200 p-4 sm:flex-row sm:items-stretch">
       <div className="flex w-60 flex-col gap-2">
-        <LabeledSelect label="Weapon" value={build.weaponId} onChange={v => updateField("weaponId", v)}>
-          {gearData.weapons.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-        </LabeledSelect>
+        <LabeledNumber
+          label="Base"
+          value={build.base}
+          min={0}
+          step={0.01}
+          onChange={nextBase => updateField("base", nextBase)}
+        />
         <LabeledSelect label="Prefix" value={build.prefixId} onChange={v => updateField("prefixId", v)}>
           {gearData.prefixes.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </LabeledSelect>
@@ -40,8 +44,9 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         <LabeledNumber
           label="Low qty"
           value={build.lowQuantity}
+          min={0}
           max={selectedLowCard?.maxQuantity ?? 0}
-          onChange={v => updateField("lowQuantity", v)}
+          onChange={nextQuantity => updateField("lowQuantity", nextQuantity)}
         />
         <LabeledSelect label="Hyper card" value={build.hyperCardId} onChange={v => updateField("hyperCardId", v)}>
           {gearData.hyperCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -49,8 +54,9 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         <LabeledNumber
           label="Hyper qty"
           value={build.hyperQuantity}
+          min={0}
           max={selectedHyperCard?.maxQuantity ?? 0}
-          onChange={v => updateField("hyperQuantity", v)}
+          onChange={nextQuantity => updateField("hyperQuantity", nextQuantity)}
         />
       </div>
 
@@ -103,23 +109,31 @@ function LabeledSelect({ label, value, onChange, children }: LabeledSelectProps)
 type LabeledNumberProps = {
   label: string;
   value: number;
-  max: number;
+  min?: number;
+  max?: number;
+  step?: number;
   onChange: (value: number) => void;
 };
 
-function LabeledNumber({ label, value, max, onChange }: LabeledNumberProps) {
+function LabeledNumber({ label, value, min = 0, max, step = 1, onChange }: LabeledNumberProps) {
   return (
     <label className="flex items-center justify-between gap-2 text-sm">
       <span className="w-20 text-neutral-600">{label}</span>
       <input
         type="number"
         className="w-20 rounded border border-neutral-300 px-2 py-1"
-        min={0}
+        min={min}
         max={max}
+        step={step}
         value={value}
         onChange={event => {
           const parsed = Number(event.target.value);
-          const clamped = Math.max(0, Math.min(max, Number.isFinite(parsed) ? parsed : 0));
+          if (!Number.isFinite(parsed)) {
+            onChange(min);
+            return;
+          }
+          const lowerBound = parsed < min ? min : parsed;
+          const clamped = max !== undefined && lowerBound > max ? max : lowerBound;
           onChange(clamped);
         }}
       />

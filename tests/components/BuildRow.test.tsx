@@ -1,17 +1,17 @@
 // tests/components/BuildRow.test.tsx
 import { describe, expect, test, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BuildRow } from "@/app/components/BuildRow";
 import { aGearData, defaultAGearBuild } from "@/data/gears/a-gear";
 
 describe("BuildRow", () => {
-  test("renders dropdowns for weapon, prefix, suffix, low card, hyper card", () => {
+  test("renders inputs for base, prefix, suffix, low card, hyper card", () => {
     render(
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={() => {}} onRemove={() => {}} />
     );
 
-    expect(screen.getByLabelText(/weapon/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^base$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/prefix/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/suffix/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/low card/i)).toBeInTheDocument();
@@ -33,8 +33,19 @@ describe("BuildRow", () => {
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={handleChange} onRemove={() => {}} />
     );
 
-    await userEvent.selectOptions(screen.getByLabelText(/prefix/i), "rapid");
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ prefixId: "rapid" }));
+    await userEvent.selectOptions(screen.getByLabelText(/prefix/i), "prefix-13");
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ prefixId: "prefix-13" }));
+  });
+
+  test("calls onChange when the user edits the base", () => {
+    const handleChange = vi.fn();
+    render(
+      <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={handleChange} onRemove={() => {}} />
+    );
+
+    const baseInput = screen.getByLabelText(/^base$/i);
+    fireEvent.change(baseInput, { target: { value: "2.5" } });
+    expect(handleChange).toHaveBeenLastCalledWith(expect.objectContaining({ base: 2.5 }));
   });
 
   test("calls onRemove when the delete button is clicked", async () => {

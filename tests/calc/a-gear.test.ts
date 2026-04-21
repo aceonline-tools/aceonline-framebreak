@@ -6,7 +6,6 @@ import type { GearData } from "@/data/types";
 const sampleGearData: GearData = {
   id: "a",
   name: "A-Gear",
-  weapons:    [{ id: "rapier",     name: "Rapier",     base: 1.5 }],
   prefixes:   [{ id: "rapid",      name: "Rapid",      value: -0.10 }],
   suffixes:   [{ id: "burst",      name: "Burst",      value: -0.15 }],
   lowCards:   [{ id: "low-card",   name: "Low Card",   value: -0.02, maxQuantity: 10 }],
@@ -17,7 +16,7 @@ const sampleGearData: GearData = {
 describe("calculateBulletsPerSecondForAGear", () => {
   test("applies the A-Gear formula: 3 / (base * (1 + prefix + suffix + enchant))", () => {
     const build = {
-      weaponId: "rapier",
+      base: 1.5,
       prefixId: "rapid",
       suffixId: "burst",
       lowCardId: "low-card",
@@ -33,7 +32,7 @@ describe("calculateBulletsPerSecondForAGear", () => {
 
   test("includes enchant cards multiplied by their quantity", () => {
     const build = {
-      weaponId: "rapier",
+      base: 1.5,
       prefixId: "rapid",
       suffixId: "burst",
       lowCardId: "low-card",
@@ -50,16 +49,14 @@ describe("calculateBulletsPerSecondForAGear", () => {
 
   test("returns NaN when modifier sum reaches or passes -1 (invalid combo)", () => {
     const oversaturatedBuild = {
-      weaponId: "rapier",
+      base: 1.5,
       prefixId: "rapid",
       suffixId: "burst",
       lowCardId: "low-card",
-      lowQuantity: 10,   // -0.20
+      lowQuantity: 10,
       hyperCardId: "hyper-card",
-      hyperQuantity: 7,  // -0.35   => total -0.80
-      // prefix + suffix = -0.25; total = -1.05 => invalid
+      hyperQuantity: 7,
     };
-    // Actually -0.10 - 0.15 - 0.20 - 0.35 = -0.80 (still valid). Make it invalid:
     const invalidGearData: GearData = {
       ...sampleGearData,
       hyperCards: [{ id: "hyper-card", name: "Hyper Card", value: -0.15, maxQuantity: 7 }],
@@ -67,5 +64,18 @@ describe("calculateBulletsPerSecondForAGear", () => {
     // -0.10 - 0.15 - 0.20 - (0.15 * 7) = -0.45 - 1.05 = -1.50
     const bulletsPerSecond = calculateBulletsPerSecondForAGear(oversaturatedBuild, invalidGearData);
     expect(Number.isNaN(bulletsPerSecond)).toBe(true);
+  });
+
+  test("returns NaN for non-positive base", () => {
+    const build = {
+      base: 0,
+      prefixId: "rapid",
+      suffixId: "burst",
+      lowCardId: "low-card",
+      lowQuantity: 0,
+      hyperCardId: "hyper-card",
+      hyperQuantity: 0,
+    };
+    expect(Number.isNaN(calculateBulletsPerSecondForAGear(build, sampleGearData))).toBe(true);
   });
 });

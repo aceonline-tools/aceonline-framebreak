@@ -86,7 +86,7 @@ describe("BuildList", () => {
 
   test("seeds initial rows from the builds query param", () => {
     currentSearchParams = new URLSearchParams(
-      "builds=placeholder-weapon-2.none.none.none.0.none.0"
+      "builds=2.25,none,none,none,0,none,0"
     );
     render(
       <Suspense fallback={null}>
@@ -95,7 +95,7 @@ describe("BuildList", () => {
     );
 
     expect(screen.getAllByTestId("bullets-per-second")).toHaveLength(1);
-    const weaponSelect = screen.getByLabelText(/weapon/i) as HTMLSelectElement;
-    expect(weaponSelect.value).toBe("placeholder-weapon-2");
+    const baseInput = screen.getByLabelText(/^base$/i) as HTMLInputElement;
+    expect(baseInput.value).toBe("2.25");
   });
 });

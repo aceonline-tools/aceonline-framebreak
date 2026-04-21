@@ -1,11 +1,5 @@
 // data/types.ts
 
-export type Weapon = {
-  id: string;
-  name: string;
-  base: number;
-};
-
 export type Affix = {
   id: string;
   name: string;
@@ -20,7 +14,7 @@ export type EnchantCard = {
 };
 
 export type Build = {
-  weaponId: string;
+  base: number;
   prefixId: string;
   suffixId: string;
   lowCardId: string;
@@ -32,7 +26,6 @@ export type Build = {
 export type GearData = {
   id: "a" | "b" | "i" | "m";
   name: string;
-  weapons: Weapon[];
   prefixes: Affix[];
   suffixes: Affix[];
   lowCards: EnchantCard[];

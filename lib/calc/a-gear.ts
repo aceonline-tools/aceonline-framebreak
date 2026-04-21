@@ -5,13 +5,15 @@ export function calculateBulletsPerSecondForAGear(
   build: Build,
   gearData: GearData,
 ): number {
-  const selectedWeapon     = gearData.weapons.find(w => w.id === build.weaponId);
-  const selectedPrefix     = gearData.prefixes.find(p => p.id === build.prefixId);
-  const selectedSuffix     = gearData.suffixes.find(s => s.id === build.suffixId);
-  const selectedLowCard    = gearData.lowCards.find(c => c.id === build.lowCardId);
-  const selectedHyperCard  = gearData.hyperCards.find(c => c.id === build.hyperCardId);
+  const selectedPrefix    = gearData.prefixes.find(p => p.id === build.prefixId);
+  const selectedSuffix    = gearData.suffixes.find(s => s.id === build.suffixId);
+  const selectedLowCard   = gearData.lowCards.find(c => c.id === build.lowCardId);
+  const selectedHyperCard = gearData.hyperCards.find(c => c.id === build.hyperCardId);
 
-  if (!selectedWeapon || !selectedPrefix || !selectedSuffix || !selectedLowCard || !selectedHyperCard) {
+  if (!selectedPrefix || !selectedSuffix || !selectedLowCard || !selectedHyperCard) {
+    return NaN;
+  }
+  if (!Number.isFinite(build.base) || build.base <= 0) {
     return NaN;
   }
 
@@ -22,7 +24,7 @@ export function calculateBulletsPerSecondForAGear(
   const totalModifier =
     selectedPrefix.value + selectedSuffix.value + enchantModifier;
 
-  const divisor = selectedWeapon.base * (1 + totalModifier);
+  const divisor = build.base * (1 + totalModifier);
   if (divisor <= 0) return NaN;
 
   return 3 / divisor;

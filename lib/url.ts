@@ -1,14 +1,16 @@
 // lib/url.ts
 import type { Build, GearData } from "@/data/types";
 
-const FIELD_SEPARATOR = ".";
+const FIELD_SEPARATOR = ",";
 const BUILD_SEPARATOR = ";";
+
+const DEFAULT_BASE = 1.5;
 
 export function encodeBuildsToQuery(builds: Build[]): string {
   return builds
     .map(build =>
       [
-        build.weaponId,
+        String(build.base),
         build.prefixId,
         build.suffixId,
         build.lowCardId,
@@ -22,7 +24,7 @@ export function encodeBuildsToQuery(builds: Build[]): string {
 
 export function decodeBuildsFromQuery(queryValue: string, gearData: GearData): Build[] {
   const defaultBuild: Build = {
-    weaponId:      gearData.weapons[0].id,
+    base:          DEFAULT_BASE,
     prefixId:      gearData.prefixes[0].id,
     suffixId:      gearData.suffixes[0].id,
     lowCardId:     gearData.lowCards[0].id,
@@ -37,7 +39,7 @@ export function decodeBuildsFromQuery(queryValue: string, gearData: GearData): B
     .split(BUILD_SEPARATOR)
     .map(rawBuild => {
       const [
-        weaponId,
+        baseString,
         prefixId,
         suffixId,
         lowCardId,
@@ -46,19 +48,23 @@ export function decodeBuildsFromQuery(queryValue: string, gearData: GearData): B
         hyperQuantityString,
       ] = rawBuild.split(FIELD_SEPARATOR);
 
-      const resolve = <T extends { id: string }>(items: T[], candidateId: string | undefined, fallback: string): string =>
-        items.some(item => item.id === candidateId) ? candidateId! : fallback;
+      const resolveAffixId = <T extends { id: string }>(
+        items: T[],
+        candidateId: string | undefined,
+        fallback: string,
+      ): string => (items.some(item => item.id === candidateId) ? candidateId! : fallback);
 
+      const parsedBase = Number(baseString);
       const parsedLowQuantity = Number(lowQuantityString);
       const parsedHyperQuantity = Number(hyperQuantityString);
 
       return {
-        weaponId:      resolve(gearData.weapons,    weaponId,    defaultBuild.weaponId),
-        prefixId:      resolve(gearData.prefixes,   prefixId,    defaultBuild.prefixId),
-        suffixId:      resolve(gearData.suffixes,   suffixId,    defaultBuild.suffixId),
-        lowCardId:     resolve(gearData.lowCards,   lowCardId,   defaultBuild.lowCardId),
+        base:          Number.isFinite(parsedBase) && parsedBase > 0 ? parsedBase : defaultBuild.base,
+        prefixId:      resolveAffixId(gearData.prefixes,   prefixId,    defaultBuild.prefixId),
+        suffixId:      resolveAffixId(gearData.suffixes,   suffixId,    defaultBuild.suffixId),
+        lowCardId:     resolveAffixId(gearData.lowCards,   lowCardId,   defaultBuild.lowCardId),
         lowQuantity:   Number.isFinite(parsedLowQuantity) ? parsedLowQuantity : 0,
-        hyperCardId:   resolve(gearData.hyperCards, hyperCardId, defaultBuild.hyperCardId),
+        hyperCardId:   resolveAffixId(gearData.hyperCards, hyperCardId, defaultBuild.hyperCardId),
         hyperQuantity: Number.isFinite(parsedHyperQuantity) ? parsedHyperQuantity : 0,
       } satisfies Build;
     });

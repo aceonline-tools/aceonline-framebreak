@@ -4,18 +4,17 @@ import { encodeBuildsToQuery, decodeBuildsFromQuery } from "@/lib/url";
 import { aGearData, defaultAGearBuild } from "@/data/gears/a-gear";
 
 describe("url encoding", () => {
-  test("encodes a single build as dot-separated fields", () => {
+  test("encodes a single build as comma-separated fields", () => {
     const encoded = encodeBuildsToQuery([defaultAGearBuild]);
-    const expectedBuild = defaultAGearBuild;
     const expected = [
-      expectedBuild.weaponId,
-      expectedBuild.prefixId,
-      expectedBuild.suffixId,
-      expectedBuild.lowCardId,
-      expectedBuild.lowQuantity,
-      expectedBuild.hyperCardId,
-      expectedBuild.hyperQuantity,
-    ].join(".");
+      String(defaultAGearBuild.base),
+      defaultAGearBuild.prefixId,
+      defaultAGearBuild.suffixId,
+      defaultAGearBuild.lowCardId,
+      String(defaultAGearBuild.lowQuantity),
+      defaultAGearBuild.hyperCardId,
+      String(defaultAGearBuild.hyperQuantity),
+    ].join(",");
     expect(encoded).toBe(expected);
   });
 
@@ -24,8 +23,11 @@ describe("url encoding", () => {
     expect(encoded.split(";")).toHaveLength(2);
   });
 
-  test("round-trips builds through encode then decode", () => {
-    const original = [defaultAGearBuild, { ...defaultAGearBuild, lowQuantity: 4, hyperQuantity: 2 }];
+  test("round-trips builds through encode then decode, including decimal base", () => {
+    const original = [
+      defaultAGearBuild,
+      { ...defaultAGearBuild, base: 2.25, lowQuantity: 4, hyperQuantity: 2 },
+    ];
     const encoded = encodeBuildsToQuery(original);
     const decoded = decodeBuildsFromQuery(encoded, aGearData);
     expect(decoded).toEqual(original);
@@ -37,7 +39,13 @@ describe("url encoding", () => {
   });
 
   test("falls back to defaults when a build field references an unknown id", () => {
-    const decoded = decodeBuildsFromQuery("missing-weapon.none.none.none.0.none.0", aGearData);
-    expect(decoded[0].weaponId).toBe(defaultAGearBuild.weaponId);
+    const decoded = decodeBuildsFromQuery("1.5,missing-prefix,none,none,0,none,0", aGearData);
+    expect(decoded[0].prefixId).toBe(defaultAGearBuild.prefixId);
+  });
+
+  test("falls back to default base when base is not a positive number", () => {
+    const decoded = decodeBuildsFromQuery("abc,none,none,none,0,none,0;0,none,none,none,0,none,0", aGearData);
+    expect(decoded[0].base).toBe(defaultAGearBuild.base);
+    expect(decoded[1].base).toBe(defaultAGearBuild.base);
   });
 });
