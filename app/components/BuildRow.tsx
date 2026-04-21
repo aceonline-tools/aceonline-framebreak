@@ -22,8 +22,8 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   const selectedPrefix = gearData.prefixes.find(p => p.id === build.prefixId);
   const selectedSuffix = gearData.suffixes.find(s => s.id === build.suffixId);
 
-  const lowMaxQuantity = selectedLowCard?.maxQuantity ?? 0;
-  const hyperMaxQuantity = selectedHyperCard?.maxQuantity ?? 0;
+  const lowMaxQuantity = Math.max(0, ...gearData.lowCards.map(c => c.maxQuantity));
+  const hyperMaxQuantity = Math.max(0, ...gearData.hyperCards.map(c => c.maxQuantity));
 
   const lowQuantities = rangeInclusive(0, lowMaxQuantity);
   const hyperQuantities = rangeInclusive(0, hyperMaxQuantity);
