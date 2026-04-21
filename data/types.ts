@@ -18,9 +18,7 @@ export type Build = {
   prefixId: string;
   suffixId: string;
   lowCardId: string;
-  lowQuantity: number;
   hyperCardId: string;
-  hyperQuantity: number;
 };
 
 export type GearData = {
@@ -30,5 +28,10 @@ export type GearData = {
   suffixes: Affix[];
   lowCards: EnchantCard[];
   hyperCards: EnchantCard[];
-  calculateBulletsPerSecond: (build: Build, data: GearData) => number;
+  calculateBulletsPerSecond: (
+    build: Build,
+    data: GearData,
+    lowQuantity: number,
+    hyperQuantity: number,
+  ) => number;
 };

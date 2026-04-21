@@ -3,6 +3,8 @@
 
 import type { Build, GearData } from "@/data/types";
 
+const NEAR_ROUND_THRESHOLD = 0.05;
+
 type BuildRowProps = {
   build: Build;
   gearData: GearData;
@@ -12,19 +14,25 @@ type BuildRowProps = {
 };
 
 export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true }: BuildRowProps) {
-  const bulletsPerSecond = gearData.calculateBulletsPerSecond(build, gearData);
-  const formattedBullets = Number.isFinite(bulletsPerSecond) ? bulletsPerSecond.toFixed(2) : "—";
+  const selectedLowCard = gearData.lowCards.find(c => c.id === build.lowCardId);
+  const selectedHyperCard = gearData.hyperCards.find(c => c.id === build.hyperCardId);
+
+  const lowMaxQuantity = selectedLowCard?.maxQuantity ?? 0;
+  const hyperMaxQuantity = selectedHyperCard?.maxQuantity ?? 0;
+
+  const lowQuantities = rangeInclusive(0, lowMaxQuantity);
+  const hyperQuantities = rangeInclusive(0, hyperMaxQuantity);
 
   const updateField = <Key extends keyof Build>(field: Key, value: Build[Key]) => {
     onChange({ ...build, [field]: value });
   };
 
-  const selectedLowCard = gearData.lowCards.find(c => c.id === build.lowCardId);
-  const selectedHyperCard = gearData.hyperCards.find(c => c.id === build.hyperCardId);
-
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-neutral-200 p-4 sm:flex-row sm:items-stretch">
-      <div className="flex w-60 flex-col gap-2">
+    <div
+      data-testid="build-row"
+      className="flex flex-col gap-4 rounded-lg border border-neutral-200 p-4 sm:flex-row sm:items-stretch"
+    >
+      <div className="flex w-60 shrink-0 flex-col gap-2">
         <LabeledNumber
           label="Base"
           value={build.base}
@@ -41,30 +49,60 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         <LabeledSelect label="Low card" value={build.lowCardId} onChange={v => updateField("lowCardId", v)}>
           {gearData.lowCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </LabeledSelect>
-        <LabeledNumber
-          label="Low qty"
-          value={build.lowQuantity}
-          min={0}
-          max={selectedLowCard?.maxQuantity ?? 0}
-          onChange={nextQuantity => updateField("lowQuantity", nextQuantity)}
-        />
         <LabeledSelect label="Hyper card" value={build.hyperCardId} onChange={v => updateField("hyperCardId", v)}>
           {gearData.hyperCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </LabeledSelect>
-        <LabeledNumber
-          label="Hyper qty"
-          value={build.hyperQuantity}
-          min={0}
-          max={selectedHyperCard?.maxQuantity ?? 0}
-          onChange={nextQuantity => updateField("hyperQuantity", nextQuantity)}
-        />
       </div>
 
-      <div className="flex flex-1 items-center justify-center gap-2 sm:flex-col sm:justify-center">
-        <span data-testid="bullets-per-second" className="text-4xl font-semibold tabular-nums">
-          {formattedBullets}
-        </span>
-        <span className="text-sm text-neutral-500">b/s</span>
+      <div className="flex flex-1 items-start justify-center overflow-x-auto">
+        <table className="border-separate border-spacing-0 text-sm tabular-nums">
+          <thead>
+            <tr>
+              <th className="sticky left-0 z-10 bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500">
+                low \ hyper
+              </th>
+              {hyperQuantities.map(hyperQuantity => (
+                <th
+                  key={hyperQuantity}
+                  className="bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500"
+                >
+                  {hyperQuantity}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {lowQuantities.map(lowQuantity => (
+              <tr key={lowQuantity}>
+                <th className="sticky left-0 z-10 bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-500">
+                  {lowQuantity}
+                </th>
+                {hyperQuantities.map(hyperQuantity => {
+                  const bulletsPerSecond = gearData.calculateBulletsPerSecond(
+                    build,
+                    gearData,
+                    lowQuantity,
+                    hyperQuantity,
+                  );
+                  const isFinite = Number.isFinite(bulletsPerSecond);
+                  const displayValue = isFinite ? bulletsPerSecond.toFixed(2) : "—";
+                  const isNearRound = isFinite && isNearRoundNumber(bulletsPerSecond);
+                  return (
+                    <td
+                      key={hyperQuantity}
+                      className={
+                        "border border-neutral-200 px-2 py-1 text-center " +
+                        (isNearRound ? "bg-amber-100 font-bold text-amber-900" : "")
+                      }
+                    >
+                      {displayValue}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <button
@@ -78,6 +116,19 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
       </button>
     </div>
   );
+}
+
+function rangeInclusive(startInclusive: number, endInclusive: number): number[] {
+  const values: number[] = [];
+  for (let current = startInclusive; current <= endInclusive; current += 1) {
+    values.push(current);
+  }
+  return values;
+}
+
+function isNearRoundNumber(value: number): boolean {
+  const distanceToNearestInteger = Math.abs(value - Math.round(value));
+  return distanceToNearestInteger < NEAR_ROUND_THRESHOLD;
 }
 
 type LabeledSelectProps = {

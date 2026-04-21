@@ -11,9 +11,7 @@ describe("url encoding", () => {
       defaultAGearBuild.prefixId,
       defaultAGearBuild.suffixId,
       defaultAGearBuild.lowCardId,
-      String(defaultAGearBuild.lowQuantity),
       defaultAGearBuild.hyperCardId,
-      String(defaultAGearBuild.hyperQuantity),
     ].join(",");
     expect(encoded).toBe(expected);
   });
@@ -26,7 +24,7 @@ describe("url encoding", () => {
   test("round-trips builds through encode then decode, including decimal base", () => {
     const original = [
       defaultAGearBuild,
-      { ...defaultAGearBuild, base: 2.25, lowQuantity: 4, hyperQuantity: 2 },
+      { ...defaultAGearBuild, base: 2.25 },
     ];
     const encoded = encodeBuildsToQuery(original);
     const decoded = decodeBuildsFromQuery(encoded, aGearData);
@@ -39,12 +37,12 @@ describe("url encoding", () => {
   });
 
   test("falls back to defaults when a build field references an unknown id", () => {
-    const decoded = decodeBuildsFromQuery("1.5,missing-prefix,none,none,0,none,0", aGearData);
+    const decoded = decodeBuildsFromQuery("1.5,missing-prefix,none,none,none", aGearData);
     expect(decoded[0].prefixId).toBe(defaultAGearBuild.prefixId);
   });
 
   test("falls back to default base when base is not a positive number", () => {
-    const decoded = decodeBuildsFromQuery("abc,none,none,none,0,none,0;0,none,none,none,0,none,0", aGearData);
+    const decoded = decodeBuildsFromQuery("abc,none,none,none,none;0,none,none,none,none", aGearData);
     expect(decoded[0].base).toBe(defaultAGearBuild.base);
     expect(decoded[1].base).toBe(defaultAGearBuild.base);
   });

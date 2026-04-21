@@ -4,6 +4,8 @@ import type { Build, GearData } from "@/data/types";
 export function calculateBulletsPerSecondForAGear(
   build: Build,
   gearData: GearData,
+  lowQuantity: number,
+  hyperQuantity: number,
 ): number {
   const selectedPrefix    = gearData.prefixes.find(p => p.id === build.prefixId);
   const selectedSuffix    = gearData.suffixes.find(s => s.id === build.suffixId);
@@ -18,8 +20,8 @@ export function calculateBulletsPerSecondForAGear(
   }
 
   const enchantModifier =
-    selectedLowCard.value   * build.lowQuantity +
-    selectedHyperCard.value * build.hyperQuantity;
+    selectedLowCard.value   * lowQuantity +
+    selectedHyperCard.value * hyperQuantity;
 
   const totalModifier =
     selectedPrefix.value + selectedSuffix.value + enchantModifier;

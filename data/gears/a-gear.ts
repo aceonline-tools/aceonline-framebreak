@@ -25,15 +25,14 @@ export const aGearData: GearData = {
     { id: "none",       name: "(none)",         value:  0,    maxQuantity: 0 },
     { id: "hyper-card", name: "Hyper Card -3%", value: -0.03, maxQuantity: 7 },
   ],
-  calculateBulletsPerSecond: (build, data) => calculateBulletsPerSecondForAGear(build, data),
+  calculateBulletsPerSecond: (build, data, lowQuantity, hyperQuantity) =>
+    calculateBulletsPerSecondForAGear(build, data, lowQuantity, hyperQuantity),
 };
 
 export const defaultAGearBuild: Build = {
-  base:          1.5,
-  prefixId:      aGearData.prefixes[0].id,
-  suffixId:      aGearData.suffixes[0].id,
-  lowCardId:     aGearData.lowCards[0].id,
-  lowQuantity:   0,
-  hyperCardId:   aGearData.hyperCards[0].id,
-  hyperQuantity: 0,
+  base:        1.5,
+  prefixId:    aGearData.prefixes[0].id,
+  suffixId:    aGearData.suffixes[0].id,
+  lowCardId:   aGearData.lowCards[0].id,
+  hyperCardId: aGearData.hyperCards[0].id,
 };

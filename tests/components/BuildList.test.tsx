@@ -32,7 +32,7 @@ describe("BuildList", () => {
         <BuildList />
       </Suspense>
     );
-    expect(screen.getAllByTestId("bullets-per-second")).toHaveLength(1);
+    expect(screen.getAllByTestId("build-row")).toHaveLength(1);
   });
 
   test("appends a new build row when Add build is clicked", async () => {
@@ -42,7 +42,7 @@ describe("BuildList", () => {
       </Suspense>
     );
     await userEvent.click(screen.getByRole("button", { name: /add build/i }));
-    expect(screen.getAllByTestId("bullets-per-second")).toHaveLength(2);
+    expect(screen.getAllByTestId("build-row")).toHaveLength(2);
   });
 
   test("removes a build row when its remove button is clicked", async () => {
@@ -54,7 +54,7 @@ describe("BuildList", () => {
     await userEvent.click(screen.getByRole("button", { name: /add build/i }));
     const removeButtons = screen.getAllByRole("button", { name: /remove/i });
     await userEvent.click(removeButtons[0]);
-    expect(screen.getAllByTestId("bullets-per-second")).toHaveLength(1);
+    expect(screen.getAllByTestId("build-row")).toHaveLength(1);
   });
 
   test("does not remove the last remaining row", async () => {
@@ -65,7 +65,7 @@ describe("BuildList", () => {
     );
     const removeButton = screen.getByRole("button", { name: /remove/i });
     await userEvent.click(removeButton);
-    expect(screen.getAllByTestId("bullets-per-second")).toHaveLength(1);
+    expect(screen.getAllByTestId("build-row")).toHaveLength(1);
   });
 
   test("writes encoded builds to the URL when a row is added", async () => {
@@ -86,7 +86,7 @@ describe("BuildList", () => {
 
   test("seeds initial rows from the builds query param", () => {
     currentSearchParams = new URLSearchParams(
-      "builds=2.25,none,none,none,0,none,0"
+      "builds=2.25,none,none,none,none"
     );
     render(
       <Suspense fallback={null}>
@@ -94,7 +94,7 @@ describe("BuildList", () => {
       </Suspense>
     );
 
-    expect(screen.getAllByTestId("bullets-per-second")).toHaveLength(1);
+    expect(screen.getAllByTestId("build-row")).toHaveLength(1);
     const baseInput = screen.getByLabelText(/^base$/i) as HTMLInputElement;
     expect(baseInput.value).toBe("2.25");
   });
