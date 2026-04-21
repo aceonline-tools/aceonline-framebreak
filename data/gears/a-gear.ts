@@ -33,6 +33,6 @@ export const defaultAGearBuild: Build = {
   base:        1.5,
   prefixId:    aGearData.prefixes[0].id,
   suffixId:    aGearData.suffixes[0].id,
-  lowCardId:   aGearData.lowCards[0].id,
-  hyperCardId: aGearData.hyperCards[0].id,
+  lowCardId:   "low-card",
+  hyperCardId: "hyper-card",
 };

@@ -4,8 +4,6 @@ import type { Build, GearData } from "@/data/types";
 const FIELD_SEPARATOR = ",";
 const BUILD_SEPARATOR = ";";
 
-const DEFAULT_BASE = 1.5;
-
 export function encodeBuildsToQuery(builds: Build[]): string {
   return builds
     .map(build =>
@@ -20,15 +18,11 @@ export function encodeBuildsToQuery(builds: Build[]): string {
     .join(BUILD_SEPARATOR);
 }
 
-export function decodeBuildsFromQuery(queryValue: string, gearData: GearData): Build[] {
-  const defaultBuild: Build = {
-    base:        DEFAULT_BASE,
-    prefixId:    gearData.prefixes[0].id,
-    suffixId:    gearData.suffixes[0].id,
-    lowCardId:   gearData.lowCards[0].id,
-    hyperCardId: gearData.hyperCards[0].id,
-  };
-
+export function decodeBuildsFromQuery(
+  queryValue: string,
+  gearData: GearData,
+  defaultBuild: Build,
+): Build[] {
   if (!queryValue) return [defaultBuild];
 
   const parsedBuilds = queryValue

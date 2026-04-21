@@ -28,7 +28,7 @@ export function BuildList() {
   const searchParams = useSearchParams();
 
   const [identifiedBuilds, setIdentifiedBuilds] = useState<IdentifiedBuild[]>(() =>
-    decodeBuildsFromQuery(searchParams.get(QUERY_KEY) ?? "", aGearData).map(attachRowId)
+    decodeBuildsFromQuery(searchParams.get(QUERY_KEY) ?? "", aGearData, defaultAGearBuild).map(attachRowId)
   );
 
   useEffect(() => {
