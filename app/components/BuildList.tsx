@@ -1,38 +1,75 @@
 // app/components/BuildList.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Build } from "@/data/types";
 import { aGearData, defaultAGearBuild } from "@/data/gears/a-gear";
+import { encodeBuildsToQuery, decodeBuildsFromQuery } from "@/lib/url";
 import { BuildRow } from "./BuildRow";
 
+const QUERY_KEY = "builds";
+
+type IdentifiedBuild = {
+  id: string;
+  build: Build;
+};
+
+function generateRowId(): string {
+  return crypto.randomUUID();
+}
+
+function attachRowId(build: Build): IdentifiedBuild {
+  return { id: generateRowId(), build };
+}
+
 export function BuildList() {
-  const [builds, setBuilds] = useState<Build[]>([defaultAGearBuild]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [identifiedBuilds, setIdentifiedBuilds] = useState<IdentifiedBuild[]>(() =>
+    decodeBuildsFromQuery(searchParams.get(QUERY_KEY) ?? "", aGearData).map(attachRowId)
+  );
+
+  useEffect(() => {
+    const encoded = encodeBuildsToQuery(identifiedBuilds.map(entry => entry.build));
+    const currentSearch = window.location.search;
+    const nextSearch = `?${QUERY_KEY}=${encoded}`;
+    if (currentSearch !== nextSearch) {
+      router.replace(nextSearch, { scroll: false });
+    }
+  }, [identifiedBuilds, router]);
 
   const updateBuildAt = (indexToUpdate: number, updatedBuild: Build) => {
-    setBuilds(previousBuilds =>
-      previousBuilds.map((build, index) => (index === indexToUpdate ? updatedBuild : build))
+    setIdentifiedBuilds(previousEntries =>
+      previousEntries.map((entry, index) =>
+        index === indexToUpdate ? { id: entry.id, build: updatedBuild } : entry
+      )
     );
   };
 
   const appendBuild = () => {
-    setBuilds(previousBuilds => [...previousBuilds, defaultAGearBuild]);
+    setIdentifiedBuilds(previousEntries => [...previousEntries, attachRowId(defaultAGearBuild)]);
   };
 
   const removeBuildAt = (indexToRemove: number) => {
-    setBuilds(previousBuilds =>
-      previousBuilds.length <= 1
-        ? previousBuilds
-        : previousBuilds.filter((_, index) => index !== indexToRemove)
+    setIdentifiedBuilds(previousEntries =>
+      previousEntries.length <= 1
+        ? previousEntries
+        : previousEntries.filter((_, index) => index !== indexToRemove)
     );
+  };
+
+  const copyShareableLink = async () => {
+    await navigator.clipboard.writeText(window.location.href);
   };
 
   return (
     <div className="flex flex-col gap-4">
-      {builds.map((build, index) => (
+      {identifiedBuilds.map((entry, index) => (
         <BuildRow
-          key={index}
-          build={build}
+          key={entry.id}
+          build={entry.build}
           gearData={aGearData}
           onChange={updatedBuild => updateBuildAt(index, updatedBuild)}
           onRemove={() => removeBuildAt(index)}
@@ -46,6 +83,13 @@ export function BuildList() {
           className="rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
         >
           + Add build
+        </button>
+        <button
+          type="button"
+          onClick={copyShareableLink}
+          className="rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
+        >
+          Copy link
         </button>
       </div>
     </div>
