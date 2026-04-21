@@ -8,9 +8,10 @@ type BuildRowProps = {
   gearData: GearData;
   onChange: (updatedBuild: Build) => void;
   onRemove: () => void;
+  canRemove?: boolean;
 };
 
-export function BuildRow({ build, gearData, onChange, onRemove }: BuildRowProps) {
+export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true }: BuildRowProps) {
   const bulletsPerSecond = gearData.calculateBulletsPerSecond(build, gearData);
   const formattedBullets = Number.isFinite(bulletsPerSecond) ? bulletsPerSecond.toFixed(2) : "—";
 
@@ -68,7 +69,8 @@ export function BuildRow({ build, gearData, onChange, onRemove }: BuildRowProps)
         type="button"
         aria-label="Remove build"
         onClick={onRemove}
-        className="self-start rounded px-2 py-1 text-neutral-500 hover:bg-neutral-100"
+        disabled={!canRemove}
+        className="self-start rounded px-2 py-1 text-neutral-500 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
       >
         ✕
       </button>

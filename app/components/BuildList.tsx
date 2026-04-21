@@ -73,6 +73,7 @@ export function BuildList() {
           gearData={aGearData}
           onChange={updatedBuild => updateBuildAt(index, updatedBuild)}
           onRemove={() => removeBuildAt(index)}
+          canRemove={identifiedBuilds.length > 1}
         />
       ))}
 
