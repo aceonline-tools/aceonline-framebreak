@@ -22,7 +22,7 @@ export function BuildRow({ build, gearData, onChange, onRemove }: BuildRowProps)
   const selectedHyperCard = gearData.hyperCards.find(c => c.id === build.hyperCardId);
 
   return (
-    <div className="flex items-stretch gap-4 rounded-lg border border-neutral-200 p-4">
+    <div className="flex flex-col gap-4 rounded-lg border border-neutral-200 p-4 sm:flex-row sm:items-stretch">
       <div className="flex w-60 flex-col gap-2">
         <LabeledSelect label="Weapon" value={build.weaponId} onChange={v => updateField("weaponId", v)}>
           {gearData.weapons.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
@@ -53,15 +53,15 @@ export function BuildRow({ build, gearData, onChange, onRemove }: BuildRowProps)
         />
       </div>
 
-      <div className="flex w-40 items-center justify-center rounded border border-dashed border-neutral-300 text-sm text-neutral-400">
+      <div className="hidden w-40 items-center justify-center rounded border border-dashed border-neutral-300 text-sm text-neutral-400 sm:flex">
         image
       </div>
 
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex flex-1 items-center justify-center gap-2 sm:flex-col sm:justify-center">
         <span data-testid="bullets-per-second" className="text-4xl font-semibold tabular-nums">
           {formattedBullets}
         </span>
-        <span className="ml-2 text-sm text-neutral-500">b/s</span>
+        <span className="text-sm text-neutral-500">b/s</span>
       </div>
 
       <button
