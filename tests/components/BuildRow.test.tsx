@@ -19,21 +19,23 @@ describe("BuildRow", () => {
   });
 
   test("renders a BPS table with the (0,0) cell showing the zero-quantity result", () => {
-    const buildWithEnchantsSelected = {
-      ...defaultAGearBuild,
+    const buildWithNoModifiers = {
+      base: 1.5,
+      prefixId: "none",
+      suffixId: "none",
       lowCardId: "low-card",
       hyperCardId: "hyper-card",
     };
     render(
       <BuildRow
-        build={buildWithEnchantsSelected}
+        build={buildWithNoModifiers}
         gearData={aGearData}
         onChange={() => {}}
         onRemove={() => {}}
       />
     );
 
-    // default base 1.5 with no modifiers → 3 / 1.5 = 2.00
+    // base 1.5 with no modifiers → 3 / 1.5 = 2.00
     const table = screen.getByRole("table");
     const rows = within(table).getAllByRole("row");
     const firstBodyRow = rows[1]; // row 0 is header

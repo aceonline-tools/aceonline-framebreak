@@ -31,9 +31,9 @@ export const aGearData: GearData = {
 };
 
 export const defaultAGearBuild: Build = {
-  base:        1.5,
-  prefixId:    aGearData.prefixes[0].id,
-  suffixId:    aGearData.suffixes[0].id,
+  base:        0.45,
+  prefixId:    "prefix-15",
+  suffixId:    "suffix-15",
   lowCardId:   "low-card",
   hyperCardId: "hyper-card",
 };
