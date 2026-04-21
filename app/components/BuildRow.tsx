@@ -50,31 +50,41 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   return (
     <div
       data-testid="build-row"
-      className="flex flex-col gap-4 rounded-lg border border-neutral-200 p-4 sm:flex-row sm:items-stretch"
+      className="flex flex-col gap-4 rounded-lg border border-neutral-200 p-4"
     >
-      <div className="flex w-60 shrink-0 flex-col gap-2">
-        <LabeledNumber
+      <div className="flex flex-wrap items-end gap-3">
+        <StackedNumber
           label="Base"
           value={build.base}
           min={0}
           step={0.01}
           onChange={nextBase => updateField("base", nextBase)}
         />
-        <LabeledSelect label="Prefix" value={build.prefixId} onChange={v => updateField("prefixId", v)}>
+        <StackedSelect label="Prefix" value={build.prefixId} onChange={v => updateField("prefixId", v)}>
           {gearData.prefixes.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </LabeledSelect>
-        <LabeledSelect label="Suffix" value={build.suffixId} onChange={v => updateField("suffixId", v)}>
+        </StackedSelect>
+        <StackedSelect label="Suffix" value={build.suffixId} onChange={v => updateField("suffixId", v)}>
           {gearData.suffixes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </LabeledSelect>
-        <LabeledSelect label="Low card" value={build.lowCardId} onChange={v => updateField("lowCardId", v)}>
+        </StackedSelect>
+        <StackedSelect label="Low card" value={build.lowCardId} onChange={v => updateField("lowCardId", v)}>
           {gearData.lowCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </LabeledSelect>
-        <LabeledSelect label="Hyper card" value={build.hyperCardId} onChange={v => updateField("hyperCardId", v)}>
+        </StackedSelect>
+        <StackedSelect label="Hyper card" value={build.hyperCardId} onChange={v => updateField("hyperCardId", v)}>
           {gearData.hyperCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </LabeledSelect>
+        </StackedSelect>
+
+        <button
+          type="button"
+          aria-label="Remove build"
+          onClick={onRemove}
+          disabled={!canRemove}
+          className="ml-auto self-start rounded px-2 py-1 text-neutral-500 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+        >
+          ✕
+        </button>
       </div>
 
-      <div className="flex flex-1 flex-col items-start gap-3 overflow-x-auto">
+      <div className="flex flex-col items-start gap-3 overflow-x-auto">
         <table className="border-separate border-spacing-0 text-sm tabular-nums">
           <thead>
             <tr>
@@ -168,16 +178,6 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
           />
         )}
       </div>
-
-      <button
-        type="button"
-        aria-label="Remove build"
-        onClick={onRemove}
-        disabled={!canRemove}
-        className="self-start rounded px-2 py-1 text-neutral-500 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-      >
-        ✕
-      </button>
     </div>
   );
 }
@@ -313,19 +313,19 @@ function isNearRoundNumber(value: number): boolean {
   return distanceToNearestInteger < NEAR_ROUND_THRESHOLD;
 }
 
-type LabeledSelectProps = {
+type StackedSelectProps = {
   label: string;
   value: string;
   onChange: (value: string) => void;
   children: React.ReactNode;
 };
 
-function LabeledSelect({ label, value, onChange, children }: LabeledSelectProps) {
+function StackedSelect({ label, value, onChange, children }: StackedSelectProps) {
   return (
-    <label className="flex items-center justify-between gap-2 text-sm">
-      <span className="w-20 text-neutral-600">{label}</span>
+    <label className="flex flex-col gap-1 text-sm">
+      <span className="text-xs font-medium text-neutral-500">{label}</span>
       <select
-        className="flex-1 rounded border border-neutral-300 px-2 py-1"
+        className="rounded border border-neutral-300 px-2 py-1"
         value={value}
         onChange={event => onChange(event.target.value)}
       >
@@ -335,7 +335,7 @@ function LabeledSelect({ label, value, onChange, children }: LabeledSelectProps)
   );
 }
 
-type LabeledNumberProps = {
+type StackedNumberProps = {
   label: string;
   value: number;
   min?: number;
@@ -344,13 +344,13 @@ type LabeledNumberProps = {
   onChange: (value: number) => void;
 };
 
-function LabeledNumber({ label, value, min = 0, max, step = 1, onChange }: LabeledNumberProps) {
+function StackedNumber({ label, value, min = 0, max, step = 1, onChange }: StackedNumberProps) {
   return (
-    <label className="flex items-center justify-between gap-2 text-sm">
-      <span className="w-20 text-neutral-600">{label}</span>
+    <label className="flex flex-col gap-1 text-sm">
+      <span className="text-xs font-medium text-neutral-500">{label}</span>
       <input
         type="number"
-        className="w-20 rounded border border-neutral-300 px-2 py-1"
+        className="w-24 rounded border border-neutral-300 px-2 py-1"
         min={min}
         max={max}
         step={step}

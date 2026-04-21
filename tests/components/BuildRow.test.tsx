@@ -101,8 +101,9 @@ describe("BuildRow", () => {
     await userEvent.click(firstCellButton);
     const switchedBreakdown = screen.getByTestId("cell-breakdown");
     expect(switchedBreakdown).toHaveTextContent("Low × 0, Hyper × 0");
-    expect(switchedBreakdown).toHaveTextContent("Prefix -13%");
-    expect(switchedBreakdown).toHaveTextContent("Suffix -14%");
+    // prefix and suffix rows show the affix percent values
+    expect(switchedBreakdown).toHaveTextContent("-13%");
+    expect(switchedBreakdown).toHaveTextContent("-14%");
 
     await userEvent.click(firstCellButton);
     expect(screen.queryByTestId("cell-breakdown")).toBeNull();
