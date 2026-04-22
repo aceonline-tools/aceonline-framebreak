@@ -162,7 +162,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                         !isSelected && isNearRound && "hover:bg-amber-300",
                         isNearRound && !isSelected && "font-bold text-amber-900",
                         isSelected && "font-bold text-white",
-                        !isNearRound && !isSelected && "text-neutral-700",
+                        !isNearRound && !isSelected && "text-neutral-400",
                       ]
                         .filter(Boolean)
                         .join(" ");
