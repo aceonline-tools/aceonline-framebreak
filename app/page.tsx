@@ -15,7 +15,7 @@ export default function HomePage() {
       <Suspense fallback={null}>
         <BuildList />
       </Suspense>
-      <footer className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 text-xs tracking-wide text-neutral-500">
+      <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 text-xs tracking-wide text-neutral-500 sm:mt-auto sm:pt-6">
         <StatsBar />
         <span>
           Built by <span className="font-semibold text-neutral-700">supcua</span>
