@@ -6,10 +6,11 @@ export const aGearData: GearData = {
   id: "a",
   name: "A-Gear",
   prefixes: [
-    { id: "none",      name: "0%",   value:  0    },
-    { id: "prefix-13", name: "-13%", value: -0.13 },
-    { id: "prefix-14", name: "-14%", value: -0.14 },
-    { id: "prefix-15", name: "-15%", value: -0.15 },
+    { id: "none",      name: "0%",              value:  0    },
+    { id: "prefix-5",  name: "-5% (+15% XP)",   value: -0.05, bonuses: { xp: 0.15 } },
+    { id: "prefix-13", name: "-13%",            value: -0.13 },
+    { id: "prefix-14", name: "-14%",            value: -0.14 },
+    { id: "prefix-15", name: "-15%",            value: -0.15 },
   ],
   suffixes: [
     { id: "none",      name: "0%",   value:  0    },

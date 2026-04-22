@@ -267,9 +267,13 @@ function CellBreakdown({
 
   const remainingLowSlots = Math.max(0, lowMaxQuantity - lowQuantity);
   const remainingHyperSlots = Math.max(0, hyperMaxQuantity - hyperQuantity);
+  const prefixBonus = prefix?.bonuses?.[otherEnchant.id] ?? 0;
+  const suffixBonus = suffix?.bonuses?.[otherEnchant.id] ?? 0;
   const otherEnchantValue =
     otherEnchant.lowValue * remainingLowSlots +
-    otherEnchant.hyperValue * remainingHyperSlots;
+    otherEnchant.hyperValue * remainingHyperSlots +
+    prefixBonus +
+    suffixBonus;
 
   return (
     <div
