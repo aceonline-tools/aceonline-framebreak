@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Ace Online BPS Calculator",
-  description: "Calculate bullets per second for Ace Online weapons across different prefix, suffix, and enchant setups.",
+  title: "Ace Online — Tính đạn AG",
+  description: "Tính đạn trên giây cho vũ khí A-Gear trong Ace Online với các lựa chọn sup đầu, sup đuôi, và thẻ tăng cường.",
 };
 
 export default function RootLayout({
