@@ -90,12 +90,19 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
       </div>
 
       <div className="flex flex-col items-start gap-3 overflow-x-auto">
-        <p className="max-w-2xl text-xs leading-relaxed text-neutral-500">
-          Hàng ngang là <strong className="font-semibold text-neutral-700">Tck thường</strong>,
-          hàng dọc là <strong className="font-semibold text-neutral-700">Tck DB</strong>,
-          <span className="mx-1 rounded bg-amber-200 px-1 font-semibold text-amber-900">bôi vàng</span>
-          là các mốc tròn đạn, bấm vào ô để xem chi tiết.
-        </p>
+        <ul className="max-w-2xl list-disc space-y-1 pl-5 text-xs leading-relaxed text-neutral-500">
+          <li>
+            Hàng ngang là <strong className="font-semibold text-neutral-700">Tck thường</strong>.
+          </li>
+          <li>
+            Hàng dọc là <strong className="font-semibold text-neutral-700">Tck DB</strong>.
+          </li>
+          <li>
+            <span className="rounded bg-amber-200 px-1 font-semibold text-amber-900">Bôi vàng</span>{" "}
+            là các mốc tròn đạn.
+          </li>
+          <li>Bấm vào ô để xem chi tiết.</li>
+        </ul>
         <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm ring-1 ring-neutral-100">
           <table className="border-separate border-spacing-0 text-sm tabular-nums">
             <thead>
