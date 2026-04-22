@@ -112,6 +112,24 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
 
   type HoveredCellInfo = SelectedCell & { anchorX: number; anchorBottom: number };
   const [hoveredCellInfo, setHoveredCellInfo] = useState<HoveredCellInfo | null>(null);
+  const [isFullGridVisible, setIsFullGridVisible] = useState(false);
+
+  const totalCardsMax = lowMaxQuantity + hyperMaxQuantity;
+  const combinedCardProgression = rangeInclusive(1, totalCardsMax).map(totalCards => {
+    const lowQuantity = Math.min(totalCards, lowMaxQuantity);
+    const hyperQuantity = totalCards - lowQuantity;
+    return {
+      totalCards,
+      lowQuantity,
+      hyperQuantity,
+      bulletsPerSecond: gearData.calculateBulletsPerSecond(
+        build,
+        gearData,
+        lowQuantity,
+        hyperQuantity,
+      ),
+    };
+  });
 
   return (
     <div
@@ -148,6 +166,29 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
       </div>
 
       <div className="flex min-w-0 flex-col gap-3">
+        <FocusedList
+          title="Tổng số thẻ Tck"
+          quantityHeader="Tổng thẻ"
+          entries={combinedCardProgression}
+          isCellSelected={isCellSelected}
+          onToggleCell={toggleCellSelection}
+          onHoverEnter={(cell, anchor) => setHoveredCellInfo({ ...cell, ...anchor })}
+          onHoverLeave={() => setHoveredCellInfo(null)}
+          quantityExtractor={entry => entry.totalCards ?? entry.lowQuantity}
+        />
+
+        <div>
+          <button
+            type="button"
+            onClick={() => setIsFullGridVisible(previous => !previous)}
+            aria-expanded={isFullGridVisible}
+            className="cursor-pointer text-xs font-medium text-sky-600 hover:text-sky-700"
+          >
+            {isFullGridVisible ? "▾ Ẩn toàn bảng" : "▸ Xem toàn bảng"}
+          </button>
+        </div>
+
+        {isFullGridVisible && (
         <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm ring-1 ring-neutral-100">
           <table className="border-separate border-spacing-0 text-[11px] tabular-nums sm:w-full sm:text-sm">
             <thead>
@@ -258,6 +299,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
             </tbody>
           </table>
         </div>
+        )}
 
         <div className="flex flex-wrap gap-3">
           {sortedSelectedCells.map(cell => (
@@ -309,6 +351,93 @@ type CellBreakdownProps = {
   hyperMaxQuantity: number;
   bulletsPerSecond: number;
 };
+
+type FocusedListEntry = {
+  lowQuantity: number;
+  hyperQuantity: number;
+  bulletsPerSecond: number;
+  totalCards?: number;
+};
+
+type FocusedListProps = {
+  title: string;
+  quantityHeader: string;
+  entries: FocusedListEntry[];
+  isCellSelected: (cell: SelectedCell) => boolean;
+  onToggleCell: (cell: SelectedCell) => void;
+  onHoverEnter: (cell: SelectedCell, anchor: { anchorX: number; anchorBottom: number }) => void;
+  onHoverLeave: () => void;
+  quantityExtractor?: (entry: FocusedListEntry) => number;
+};
+
+function FocusedList({
+  title,
+  quantityHeader,
+  entries,
+  isCellSelected,
+  onToggleCell,
+  onHoverEnter,
+  onHoverLeave,
+  quantityExtractor = entry => entry.lowQuantity,
+}: FocusedListProps) {
+  return (
+    <div className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm ring-1 ring-neutral-100">
+      <div className="flex items-baseline justify-between gap-2 border-b border-neutral-200 bg-neutral-100 px-3 py-2 text-xs font-semibold text-neutral-600">
+        <span>{title}</span>
+        <span className="text-[10px] font-medium text-neutral-500">{quantityHeader}</span>
+      </div>
+      <div className="flex gap-1 overflow-x-auto p-2 text-sm tabular-nums">
+        {entries.map(entry => {
+          const isFiniteValue = Number.isFinite(entry.bulletsPerSecond);
+          const displayValue = isFiniteValue ? entry.bulletsPerSecond.toFixed(2) : "—";
+          const isNearInteger = isFiniteValue && isNearIntegerNumber(entry.bulletsPerSecond);
+          const isNearHalf = isFiniteValue && isNearHalfNumber(entry.bulletsPerSecond);
+          const isSelected = isCellSelected({
+            lowQuantity: entry.lowQuantity,
+            hyperQuantity: entry.hyperQuantity,
+          });
+          const shouldShowAmber = !isSelected && (isNearInteger || isNearHalf);
+
+          const handleClick = () => {
+            onToggleCell({
+              lowQuantity: entry.lowQuantity,
+              hyperQuantity: entry.hyperQuantity,
+            });
+          };
+
+          const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            onHoverEnter(
+              { lowQuantity: entry.lowQuantity, hyperQuantity: entry.hyperQuantity },
+              { anchorX: rect.left + rect.width / 2, anchorBottom: rect.top },
+            );
+          };
+
+          const cellBackground = isSelected
+            ? "bg-sky-500 text-white border-sky-600"
+            : shouldShowAmber
+              ? "bg-amber-200 text-amber-900 font-semibold border-amber-300"
+              : "bg-white text-neutral-700 hover:bg-sky-50 border-neutral-200";
+
+          return (
+            <button
+              key={`${entry.lowQuantity}-${entry.hyperQuantity}`}
+              type="button"
+              onClick={handleClick}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={onHoverLeave}
+              aria-pressed={isSelected}
+              className={`flex min-w-[52px] shrink-0 cursor-pointer flex-col items-center gap-0.5 rounded-md border px-2 py-1 text-xs transition-colors ${cellBackground}`}
+            >
+              <span className="text-[10px] opacity-70">{quantityExtractor(entry)}</span>
+              <span className="font-semibold">{displayValue}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 type CellHoverTooltipProps = {
   anchorX: number;
