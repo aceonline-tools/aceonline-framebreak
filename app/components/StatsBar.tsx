@@ -63,14 +63,29 @@ export function StatsBar() {
         type="button"
         onClick={submitVote}
         disabled={hasVoted || isSubmittingVote}
+        aria-busy={isSubmittingVote}
         className={
-          "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors " +
+          "group inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors " +
           (hasVoted
             ? "cursor-default border-rose-300 bg-rose-50 text-rose-600"
-            : "cursor-pointer border-neutral-300 text-neutral-600 hover:bg-neutral-100")
+            : isSubmittingVote
+              ? "cursor-wait border-neutral-300 text-neutral-400"
+              : "cursor-pointer border-neutral-300 text-neutral-600 hover:bg-neutral-100")
         }
       >
-        <span aria-hidden="true">{hasVoted ? "♥" : "♡"}</span>
+        {isSubmittingVote ? (
+          <span
+            aria-hidden="true"
+            className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-500"
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className={hasVoted ? "animate-heartbeat" : "animate-heartbeat-hover"}
+          >
+            {hasVoted ? "♥" : "♡"}
+          </span>
+        )}
         <span className="tabular-nums">{stats ? stats.voteCount.toLocaleString() : "—"}</span>
       </button>
     </div>
