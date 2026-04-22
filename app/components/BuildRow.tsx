@@ -249,16 +249,14 @@ function CellBreakdown({
           ✕
         </button>
       </div>
-      <dl className="grid grid-cols-[auto_1fr_auto] gap-x-3 gap-y-1 text-neutral-700">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-neutral-700">
         <BreakdownLine
-          term="Total"
-          description="sum of modifiers"
+          term="Tck"
           value={formatSignedPercent(totalModifier)}
           emphasized
         />
         <BreakdownLine
-          term="BPS"
-          description="3 ÷ divisor"
+          term="đạn trên giây"
           value={Number.isFinite(bulletsPerSecond) ? bulletsPerSecond.toFixed(4) : "—"}
           emphasized
         />
@@ -269,17 +267,15 @@ function CellBreakdown({
 
 type BreakdownLineProps = {
   term: string;
-  description: string;
   value: string;
   emphasized?: boolean;
 };
 
-function BreakdownLine({ term, description, value, emphasized = false }: BreakdownLineProps) {
+function BreakdownLine({ term, value, emphasized = false }: BreakdownLineProps) {
   const emphasisClass = emphasized ? "font-semibold text-neutral-900" : "";
   return (
     <>
       <dt className={`text-neutral-500 ${emphasisClass}`}>{term}</dt>
-      <dd className={`text-neutral-600 ${emphasisClass}`}>{description}</dd>
       <dd className={`text-right tabular-nums ${emphasisClass}`}>{value}</dd>
     </>
   );
