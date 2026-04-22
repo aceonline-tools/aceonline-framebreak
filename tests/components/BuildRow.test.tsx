@@ -70,7 +70,7 @@ describe("BuildRow", () => {
     expect(handleRemove).toHaveBeenCalled();
   });
 
-  test("opens the breakdown at the max-quantity cell by default and toggles on click", async () => {
+  test("keeps the breakdown open at the max cell by default and reverts to it when the same cell is clicked twice", async () => {
     const buildWithModifiers = {
       base: 0.45,
       prefixId: "prefix-13",
@@ -102,7 +102,10 @@ describe("BuildRow", () => {
     // Total modifier at (0,0) with prefix -13% + suffix -14% = -27%
     expect(switchedBreakdown).toHaveTextContent("-27%");
 
+    // Clicking the same non-max cell again reverts selection to the max cell
     await userEvent.click(firstCellButton);
-    expect(screen.queryByTestId("cell-breakdown")).toBeNull();
+    const revertedBreakdown = screen.getByTestId("cell-breakdown");
+    expect(revertedBreakdown).toHaveTextContent("Tck thường × 10");
+    expect(revertedBreakdown).toHaveTextContent("Tck DB × 6");
   });
 });

@@ -34,23 +34,28 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   const lowQuantities = rangeInclusive(0, lowMaxQuantity);
   const hyperQuantities = rangeInclusive(0, hyperMaxQuantity);
 
-  const [selectedCell, setSelectedCell] = useState<SelectedCell | null>({
+  const maxCell: SelectedCell = {
     lowQuantity: lowMaxQuantity,
     hyperQuantity: hyperMaxQuantity,
-  });
+  };
+
+  const [selectedCell, setSelectedCell] = useState<SelectedCell>(maxCell);
+
+  const isMaxCell = (cell: SelectedCell) =>
+    cell.lowQuantity === maxCell.lowQuantity && cell.hyperQuantity === maxCell.hyperQuantity;
 
   const updateField = <Key extends keyof Build>(field: Key, value: Build[Key]) => {
     onChange({ ...build, [field]: value });
   };
 
   const toggleCellSelection = (candidateCell: SelectedCell) => {
-    setSelectedCell(previous =>
-      previous &&
-      previous.lowQuantity === candidateCell.lowQuantity &&
-      previous.hyperQuantity === candidateCell.hyperQuantity
-        ? null
-        : candidateCell
-    );
+    setSelectedCell(previous => {
+      const clickingSameCell =
+        previous.lowQuantity === candidateCell.lowQuantity &&
+        previous.hyperQuantity === candidateCell.hyperQuantity;
+      if (!clickingSameCell) return candidateCell;
+      return isMaxCell(candidateCell) ? candidateCell : maxCell;
+    });
   };
 
   return (
@@ -138,7 +143,6 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                       const displayValue = isFiniteValue ? bulletsPerSecond.toFixed(2) : "—";
                       const isNearRound = isFiniteValue && isNearRoundNumber(bulletsPerSecond);
                       const isSelected =
-                        !!selectedCell &&
                         selectedCell.lowQuantity === lowQuantity &&
                         selectedCell.hyperQuantity === hyperQuantity;
                       const isLastCol = colIndex === lowQuantities.length - 1;
@@ -187,23 +191,20 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
           </table>
         </div>
 
-        {selectedCell && (
-          <CellBreakdown
-            prefix={selectedPrefix}
-            suffix={selectedSuffix}
-            lowCard={activeLowCard}
-            hyperCard={activeHyperCard}
-            lowQuantity={selectedCell.lowQuantity}
-            hyperQuantity={selectedCell.hyperQuantity}
-            bulletsPerSecond={gearData.calculateBulletsPerSecond(
-              build,
-              gearData,
-              selectedCell.lowQuantity,
-              selectedCell.hyperQuantity,
-            )}
-            onDismiss={() => setSelectedCell(null)}
-          />
-        )}
+        <CellBreakdown
+          prefix={selectedPrefix}
+          suffix={selectedSuffix}
+          lowCard={activeLowCard}
+          hyperCard={activeHyperCard}
+          lowQuantity={selectedCell.lowQuantity}
+          hyperQuantity={selectedCell.hyperQuantity}
+          bulletsPerSecond={gearData.calculateBulletsPerSecond(
+            build,
+            gearData,
+            selectedCell.lowQuantity,
+            selectedCell.hyperQuantity,
+          )}
+        />
       </div>
     </div>
   );
@@ -217,7 +218,6 @@ type CellBreakdownProps = {
   lowQuantity: number;
   hyperQuantity: number;
   bulletsPerSecond: number;
-  onDismiss: () => void;
 };
 
 function CellBreakdown({
@@ -228,7 +228,6 @@ function CellBreakdown({
   lowQuantity,
   hyperQuantity,
   bulletsPerSecond,
-  onDismiss,
 }: CellBreakdownProps) {
   const prefixValue = prefix?.value ?? 0;
   const suffixValue = suffix?.value ?? 0;
@@ -241,18 +240,8 @@ function CellBreakdown({
       data-testid="cell-breakdown"
       className="w-fit min-w-[220px] rounded-md border border-neutral-200 bg-neutral-50 p-3 text-sm"
     >
-      <div className="mb-2 flex items-center justify-between">
-        <span className="font-semibold text-neutral-700">
-          {LOW_LABEL} × {lowQuantity}, {HYPER_LABEL} × {hyperQuantity}
-        </span>
-        <button
-          type="button"
-          aria-label="Close breakdown"
-          onClick={onDismiss}
-          className="rounded px-2 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-700"
-        >
-          ✕
-        </button>
+      <div className="mb-2 font-semibold text-neutral-700">
+        {LOW_LABEL} × {lowQuantity}, {HYPER_LABEL} × {hyperQuantity}
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-neutral-700">
         <BreakdownLine
