@@ -11,7 +11,7 @@ const HYPER_LABEL = "Tck DB";
 const PREFIX_LABEL = "Sup đầu";
 const SUFFIX_LABEL = "Sup đuôi";
 const BASE_LABEL = "Tck cơ bản";
-const ENCHANT_LABEL = "Loại enchant";
+const ENCHANT_LABEL = "Enchant khác";
 
 type EnchantType = {
   id: string;
@@ -20,11 +20,10 @@ type EnchantType = {
   hyperValue: number;
 };
 
-const ENCHANT_TYPES: EnchantType[] = [
-  { id: "tck",  name: "Tck",    lowValue: -0.02,  hyperValue: -0.03  },
-  { id: "xp",   name: "XP",     lowValue:  0.02,  hyperValue:  0.04  },
-  { id: "cx",   name: "CX",     lowValue:  0.0275, hyperValue: 0.0549 },
-  { id: "range", name: "Cự ly", lowValue:  0.03,  hyperValue:  0.03  },
+const OTHER_ENCHANT_TYPES: EnchantType[] = [
+  { id: "xp",    name: "XP",    lowValue: 0.02,   hyperValue: 0.04   },
+  { id: "cx",    name: "CX",    lowValue: 0.0275, hyperValue: 0.0549 },
+  { id: "range", name: "Cự ly", lowValue: 0.03,   hyperValue: 0.03   },
 ];
 
 type SelectedCell = { lowQuantity: number; hyperQuantity: number };
@@ -41,10 +40,9 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   const selectedPrefix = gearData.prefixes.find(p => p.id === build.prefixId);
   const selectedSuffix = gearData.suffixes.find(s => s.id === build.suffixId);
 
-  const [enchantTypeId, setEnchantTypeId] = useState<string>("tck");
-  const activeEnchantType =
-    ENCHANT_TYPES.find(type => type.id === enchantTypeId) ?? ENCHANT_TYPES[0];
-  const isTckEnchant = activeEnchantType.id === "tck";
+  const [otherEnchantId, setOtherEnchantId] = useState<string>(OTHER_ENCHANT_TYPES[0].id);
+  const activeOtherEnchant =
+    OTHER_ENCHANT_TYPES.find(type => type.id === otherEnchantId) ?? OTHER_ENCHANT_TYPES[0];
 
   const lowMaxQuantity = gearData.lowCards[0]?.maxQuantity ?? 0;
   const hyperMaxQuantity = gearData.hyperCards[0]?.maxQuantity ?? 0;
@@ -95,8 +93,8 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         <StackedSelect label={SUFFIX_LABEL} value={build.suffixId} onChange={v => updateField("suffixId", v)}>
           {gearData.suffixes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </StackedSelect>
-        <StackedSelect label={ENCHANT_LABEL} value={enchantTypeId} onChange={setEnchantTypeId}>
-          {ENCHANT_TYPES.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
+        <StackedSelect label={ENCHANT_LABEL} value={otherEnchantId} onChange={setOtherEnchantId}>
+          {OTHER_ENCHANT_TYPES.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
         </StackedSelect>
 
         <button
@@ -167,22 +165,15 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                       {hyperQuantity}
                     </th>
                     {lowQuantities.map((lowQuantity, colIndex) => {
-                      const rawCellValue = computeCellValue(
-                        activeEnchantType,
+                      const bulletsPerSecond = gearData.calculateBulletsPerSecond(
                         build,
-                        selectedPrefix?.value ?? 0,
-                        selectedSuffix?.value ?? 0,
+                        gearData,
                         lowQuantity,
                         hyperQuantity,
                       );
-                      const isFiniteValue = Number.isFinite(rawCellValue);
-                      const displayValue = !isFiniteValue
-                        ? "—"
-                        : isTckEnchant
-                          ? rawCellValue.toFixed(2)
-                          : formatSignedPercent(rawCellValue);
-                      const isNearRound =
-                        isFiniteValue && isTckEnchant && isNearRoundNumber(rawCellValue);
+                      const isFiniteValue = Number.isFinite(bulletsPerSecond);
+                      const displayValue = isFiniteValue ? bulletsPerSecond.toFixed(2) : "—";
+                      const isNearRound = isFiniteValue && isNearRoundNumber(bulletsPerSecond);
                       const isSelected =
                         selectedCell.lowQuantity === lowQuantity &&
                         selectedCell.hyperQuantity === hyperQuantity;
@@ -229,16 +220,14 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         </div>
 
         <CellBreakdown
-          enchantType={activeEnchantType}
+          otherEnchant={activeOtherEnchant}
           prefix={selectedPrefix}
           suffix={selectedSuffix}
           lowQuantity={selectedCell.lowQuantity}
           hyperQuantity={selectedCell.hyperQuantity}
-          cellValue={computeCellValue(
-            activeEnchantType,
+          bulletsPerSecond={gearData.calculateBulletsPerSecond(
             build,
-            selectedPrefix?.value ?? 0,
-            selectedSuffix?.value ?? 0,
+            gearData,
             selectedCell.lowQuantity,
             selectedCell.hyperQuantity,
           )}
@@ -249,36 +238,28 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
 }
 
 type CellBreakdownProps = {
-  enchantType: EnchantType;
+  otherEnchant: EnchantType;
   prefix?: Affix;
   suffix?: Affix;
   lowQuantity: number;
   hyperQuantity: number;
-  cellValue: number;
+  bulletsPerSecond: number;
 };
 
 function CellBreakdown({
-  enchantType,
+  otherEnchant,
   prefix,
   suffix,
   lowQuantity,
   hyperQuantity,
-  cellValue,
+  bulletsPerSecond,
 }: CellBreakdownProps) {
-  const isTck = enchantType.id === "tck";
   const prefixValue = prefix?.value ?? 0;
   const suffixValue = suffix?.value ?? 0;
-  const enchantContribution =
-    enchantType.lowValue * lowQuantity + enchantType.hyperValue * hyperQuantity;
-  const totalModifier = isTck
-    ? prefixValue + suffixValue + enchantContribution
-    : enchantContribution;
-
-  const formattedCellValue = !Number.isFinite(cellValue)
-    ? "—"
-    : isTck
-      ? cellValue.toFixed(4)
-      : formatSignedPercent(cellValue);
+  const tckCardContribution = -0.02 * lowQuantity + -0.03 * hyperQuantity;
+  const tckTotalModifier = prefixValue + suffixValue + tckCardContribution;
+  const otherEnchantValue =
+    otherEnchant.lowValue * lowQuantity + otherEnchant.hyperValue * hyperQuantity;
 
   return (
     <div
@@ -290,17 +271,20 @@ function CellBreakdown({
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-neutral-700">
         <BreakdownLine
-          term={isTck ? "Tck" : enchantType.name}
-          value={formatSignedPercent(totalModifier)}
+          term="Tck"
+          value={formatSignedPercent(tckTotalModifier)}
           emphasized
         />
-        {isTck && (
-          <BreakdownLine
-            term="đạn trên giây"
-            value={formattedCellValue}
-            emphasized
-          />
-        )}
+        <BreakdownLine
+          term="đạn trên giây"
+          value={Number.isFinite(bulletsPerSecond) ? bulletsPerSecond.toFixed(4) : "—"}
+          emphasized
+        />
+        <BreakdownLine
+          term={otherEnchant.name}
+          value={formatSignedPercent(otherEnchantValue)}
+          emphasized
+        />
       </dl>
     </div>
   );
@@ -344,27 +328,6 @@ function isNearRoundNumber(value: number): boolean {
   return fractionAboveInteger < NEAR_ROUND_THRESHOLD;
 }
 
-function computeCellValue(
-  enchantType: EnchantType,
-  build: Build,
-  prefixValue: number,
-  suffixValue: number,
-  lowQuantity: number,
-  hyperQuantity: number,
-): number {
-  const enchantModifier =
-    enchantType.lowValue * lowQuantity + enchantType.hyperValue * hyperQuantity;
-
-  if (enchantType.id === "tck") {
-    if (!Number.isFinite(build.base) || build.base <= 0) return NaN;
-    const totalModifier = prefixValue + suffixValue + enchantModifier;
-    const divisor = build.base * (1 + totalModifier);
-    if (divisor <= 0) return NaN;
-    return 3 / divisor;
-  }
-
-  return enchantModifier;
-}
 
 type StackedSelectProps = {
   label: string;
