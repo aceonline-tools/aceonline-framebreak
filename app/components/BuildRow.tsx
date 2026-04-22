@@ -110,6 +110,9 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
     return first.lowQuantity - second.lowQuantity;
   });
 
+  type HoveredCellInfo = SelectedCell & { anchorX: number; anchorBottom: number };
+  const [hoveredCellInfo, setHoveredCellInfo] = useState<HoveredCellInfo | null>(null);
+
   return (
     <div
       data-testid="build-row"
@@ -231,6 +234,16 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                           <button
                             type="button"
                             onClick={() => toggleCellSelection({ lowQuantity, hyperQuantity })}
+                            onMouseEnter={event => {
+                              const rect = event.currentTarget.getBoundingClientRect();
+                              setHoveredCellInfo({
+                                lowQuantity,
+                                hyperQuantity,
+                                anchorX: rect.left + rect.width / 2,
+                                anchorBottom: rect.top,
+                              });
+                            }}
+                            onMouseLeave={() => setHoveredCellInfo(null)}
                             aria-pressed={isSelected}
                             className={buttonClassName}
                           >
@@ -267,6 +280,21 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
           ))}
         </div>
       </div>
+      {hoveredCellInfo && (
+        <CellHoverTooltip
+          anchorX={hoveredCellInfo.anchorX}
+          anchorBottom={hoveredCellInfo.anchorBottom}
+          build={build}
+          gearData={gearData}
+          prefix={selectedPrefix}
+          suffix={selectedSuffix}
+          otherEnchant={activeOtherEnchant}
+          lowQuantity={hoveredCellInfo.lowQuantity}
+          hyperQuantity={hoveredCellInfo.hyperQuantity}
+          lowMaxQuantity={lowMaxQuantity}
+          hyperMaxQuantity={hyperMaxQuantity}
+        />
+      )}
     </div>
   );
 }
@@ -281,6 +309,93 @@ type CellBreakdownProps = {
   hyperMaxQuantity: number;
   bulletsPerSecond: number;
 };
+
+type CellHoverTooltipProps = {
+  anchorX: number;
+  anchorBottom: number;
+  build: Build;
+  gearData: GearData;
+  prefix?: Affix;
+  suffix?: Affix;
+  otherEnchant: EnchantType;
+  lowQuantity: number;
+  hyperQuantity: number;
+  lowMaxQuantity: number;
+  hyperMaxQuantity: number;
+};
+
+function CellHoverTooltip({
+  anchorX,
+  anchorBottom,
+  build,
+  gearData,
+  prefix,
+  suffix,
+  otherEnchant,
+  lowQuantity,
+  hyperQuantity,
+  lowMaxQuantity,
+  hyperMaxQuantity,
+}: CellHoverTooltipProps) {
+  const bulletsPerSecond = gearData.calculateBulletsPerSecond(
+    build,
+    gearData,
+    lowQuantity,
+    hyperQuantity,
+  );
+  const prefixValue = prefix?.value ?? 0;
+  const suffixValue = suffix?.value ?? 0;
+  const tckCardContribution = -0.02 * lowQuantity + -0.03 * hyperQuantity;
+  const tckTotalModifier = prefixValue + suffixValue + tckCardContribution;
+
+  const remainingLowSlots = Math.max(0, lowMaxQuantity - lowQuantity);
+  const remainingHyperSlots = Math.max(0, hyperMaxQuantity - hyperQuantity);
+  const prefixBonus = prefix?.bonuses?.[otherEnchant.id] ?? 0;
+  const suffixBonus = suffix?.bonuses?.[otherEnchant.id] ?? 0;
+  const otherEnchantValue =
+    otherEnchant.lowValue * remainingLowSlots +
+    otherEnchant.hyperValue * remainingHyperSlots +
+    prefixBonus +
+    suffixBonus;
+
+  const tckSlotsLabel = formatRemainingSlotsLabel("Tck", lowQuantity, hyperQuantity) ?? "Tck";
+  const enchantSlotsLabel = formatRemainingSlotsLabel(
+    otherEnchant.name,
+    remainingLowSlots,
+    remainingHyperSlots,
+  );
+
+  return (
+    <div
+      role="tooltip"
+      style={{
+        position: "fixed",
+        top: anchorBottom - 8,
+        left: anchorX,
+        transform: "translate(-50%, -100%)",
+      }}
+      className="pointer-events-none z-50 hidden min-w-[180px] rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-700 shadow-lg sm:block"
+    >
+      <div className="mb-1 font-semibold text-neutral-900 tabular-nums">
+        {Number.isFinite(bulletsPerSecond) ? `${bulletsPerSecond.toFixed(2)} v/s` : "— v/s"}
+      </div>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+        <dt className="text-neutral-500">{tckSlotsLabel}</dt>
+        <dd className="text-right font-semibold tabular-nums">
+          {formatSignedPercent(tckTotalModifier)}
+        </dd>
+        {enchantSlotsLabel && (
+          <>
+            <dt className="text-neutral-500">{enchantSlotsLabel}</dt>
+            <dd className="text-right font-semibold tabular-nums">
+              {formatSignedPercent(otherEnchantValue)}
+            </dd>
+          </>
+        )}
+      </dl>
+    </div>
+  );
+}
 
 function CellBreakdown({
   otherEnchant,
