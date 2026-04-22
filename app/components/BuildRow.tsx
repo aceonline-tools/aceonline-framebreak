@@ -43,8 +43,8 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   const lowMaxQuantity = gearData.lowCards[0]?.maxQuantity ?? 0;
   const hyperMaxQuantity = gearData.hyperCards[0]?.maxQuantity ?? 0;
 
-  const lowQuantities = rangeInclusive(0, lowMaxQuantity);
-  const hyperQuantities = rangeInclusive(0, hyperMaxQuantity);
+  const lowQuantities = rangeInclusive(0, lowMaxQuantity).reverse();
+  const hyperQuantities = rangeInclusive(0, hyperMaxQuantity).reverse();
 
   const maxCell: SelectedCell = {
     lowQuantity: lowMaxQuantity,
