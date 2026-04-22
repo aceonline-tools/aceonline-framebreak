@@ -225,6 +225,8 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
           suffix={selectedSuffix}
           lowQuantity={selectedCell.lowQuantity}
           hyperQuantity={selectedCell.hyperQuantity}
+          lowMaxQuantity={lowMaxQuantity}
+          hyperMaxQuantity={hyperMaxQuantity}
           bulletsPerSecond={gearData.calculateBulletsPerSecond(
             build,
             gearData,
@@ -243,6 +245,8 @@ type CellBreakdownProps = {
   suffix?: Affix;
   lowQuantity: number;
   hyperQuantity: number;
+  lowMaxQuantity: number;
+  hyperMaxQuantity: number;
   bulletsPerSecond: number;
 };
 
@@ -252,14 +256,20 @@ function CellBreakdown({
   suffix,
   lowQuantity,
   hyperQuantity,
+  lowMaxQuantity,
+  hyperMaxQuantity,
   bulletsPerSecond,
 }: CellBreakdownProps) {
   const prefixValue = prefix?.value ?? 0;
   const suffixValue = suffix?.value ?? 0;
   const tckCardContribution = -0.02 * lowQuantity + -0.03 * hyperQuantity;
   const tckTotalModifier = prefixValue + suffixValue + tckCardContribution;
+
+  const remainingLowSlots = Math.max(0, lowMaxQuantity - lowQuantity);
+  const remainingHyperSlots = Math.max(0, hyperMaxQuantity - hyperQuantity);
   const otherEnchantValue =
-    otherEnchant.lowValue * lowQuantity + otherEnchant.hyperValue * hyperQuantity;
+    otherEnchant.lowValue * remainingLowSlots +
+    otherEnchant.hyperValue * remainingHyperSlots;
 
   return (
     <div
@@ -281,7 +291,7 @@ function CellBreakdown({
           emphasized
         />
         <BreakdownLine
-          term={otherEnchant.name}
+          term={`${otherEnchant.name} (${remainingLowSlots}×thường + ${remainingHyperSlots}×DB)`}
           value={formatSignedPercent(otherEnchantValue)}
           emphasized
         />
