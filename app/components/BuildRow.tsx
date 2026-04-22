@@ -4,7 +4,7 @@
 import { useState } from "react";
 import type { Affix, Build, EnchantCard, GearData } from "@/data/types";
 
-const NEAR_ROUND_THRESHOLD = 0.2;
+const NEAR_ROUND_THRESHOLD = 0.15;
 
 const LOW_LABEL = "Tck thường";
 const HYPER_LABEL = "Tck DB";
