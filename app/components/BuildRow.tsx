@@ -1,7 +1,7 @@
 // app/components/BuildRow.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Affix, Build, GearData, SelectedCell } from "@/data/types";
 
 const NEAR_ROUND_THRESHOLD = 0.2;
@@ -524,16 +524,38 @@ type StackedSelectProps = {
 };
 
 function StackedSelect({ label, value, onChange, children }: StackedSelectProps) {
+  const selectRef = useRef<HTMLSelectElement>(null);
+  const measurerRef = useRef<HTMLSpanElement>(null);
+  const [selectWidth, setSelectWidth] = useState<number | undefined>(undefined);
+
+  useLayoutEffect(() => {
+    const select = selectRef.current;
+    const measurer = measurerRef.current;
+    if (!select || !measurer) return;
+    const selectedOption = select.options[select.selectedIndex];
+    measurer.textContent = selectedOption?.textContent ?? "";
+    setSelectWidth(measurer.offsetWidth + 40);
+  }, [value, children]);
+
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="text-xs font-medium text-neutral-500">{label}</span>
-      <select
-        className="rounded border border-neutral-300 px-2 py-1"
-        value={value}
-        onChange={event => onChange(event.target.value)}
-      >
-        {children}
-      </select>
+      <span className="relative inline-block">
+        <select
+          ref={selectRef}
+          style={{ width: selectWidth }}
+          className="h-8 appearance-none rounded border border-neutral-300 bg-white bg-[length:12px_12px] bg-[position:right_0.5rem_center] bg-no-repeat px-2 pr-7 text-sm leading-none bg-[image:url('data:image/svg+xml;utf8,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23737373%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22><polyline%20points=%226%209%2012%2015%2018%209%22/></svg>')]"
+          value={value}
+          onChange={event => onChange(event.target.value)}
+        >
+          {children}
+        </select>
+        <span
+          ref={measurerRef}
+          aria-hidden="true"
+          className="pointer-events-none invisible absolute left-0 top-0 whitespace-pre text-sm leading-none"
+        />
+      </span>
     </label>
   );
 }
@@ -576,7 +598,7 @@ function StackedNumber({ label, value, min = 0, max, onChange }: StackedNumberPr
       <input
         type="text"
         inputMode="decimal"
-        className="w-24 rounded border border-neutral-300 px-2 py-1"
+        className="h-8 w-24 rounded border border-neutral-300 bg-white px-2 text-sm leading-none"
         value={rawInput}
         onChange={handleChange}
       />
