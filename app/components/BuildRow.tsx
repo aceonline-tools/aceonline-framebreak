@@ -239,7 +239,7 @@ function CellBreakdown({
   return (
     <div
       data-testid="cell-breakdown"
-      className="w-full max-w-md rounded-md border border-neutral-200 bg-neutral-50 p-3 text-sm"
+      className="w-fit min-w-[220px] rounded-md border border-neutral-200 bg-neutral-50 p-3 text-sm"
     >
       <div className="mb-2 flex items-center justify-between">
         <span className="font-semibold text-neutral-700">
