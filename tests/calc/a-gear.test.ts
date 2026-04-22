@@ -18,8 +18,6 @@ const buildWithAllSelections = {
   base: 1.5,
   prefixId: "rapid",
   suffixId: "burst",
-  lowCardId: "low-card",
-  hyperCardId: "hyper-card",
 };
 
 describe("calculateBulletsPerSecondForAGear", () => {

@@ -6,16 +6,14 @@ import { BuildRow } from "@/app/components/BuildRow";
 import { aGearData, defaultAGearBuild } from "@/data/gears/a-gear";
 
 describe("BuildRow", () => {
-  test("renders inputs for base, prefix, suffix, low card, hyper card", () => {
+  test("renders inputs for base, prefix, and suffix", () => {
     render(
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={() => {}} onRemove={() => {}} />
     );
 
-    expect(screen.getByLabelText(/^base$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/prefix/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/suffix/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/low card/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/hyper card/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/tck cơ bản/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/sup đầu/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/sup đuôi/i)).toBeInTheDocument();
   });
 
   test("renders a BPS table with the (0,0) cell showing the zero-quantity result", () => {
@@ -23,8 +21,6 @@ describe("BuildRow", () => {
       base: 1.5,
       prefixId: "none",
       suffixId: "none",
-      lowCardId: "low-card",
-      hyperCardId: "hyper-card",
     };
     render(
       <BuildRow
@@ -49,7 +45,7 @@ describe("BuildRow", () => {
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={handleChange} onRemove={() => {}} />
     );
 
-    await userEvent.selectOptions(screen.getByLabelText(/prefix/i), "prefix-13");
+    await userEvent.selectOptions(screen.getByLabelText(/sup đầu/i), "prefix-13");
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ prefixId: "prefix-13" }));
   });
 
@@ -59,7 +55,7 @@ describe("BuildRow", () => {
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={handleChange} onRemove={() => {}} />
     );
 
-    const baseInput = screen.getByLabelText(/^base$/i);
+    const baseInput = screen.getByLabelText(/tck cơ bản/i);
     fireEvent.change(baseInput, { target: { value: "2.5" } });
     expect(handleChange).toHaveBeenLastCalledWith(expect.objectContaining({ base: 2.5 }));
   });
@@ -75,16 +71,14 @@ describe("BuildRow", () => {
   });
 
   test("opens the breakdown at the max-quantity cell by default and toggles on click", async () => {
-    const buildWithEnchantsSelected = {
-      ...defaultAGearBuild,
+    const buildWithModifiers = {
+      base: 0.45,
       prefixId: "prefix-13",
       suffixId: "suffix-14",
-      lowCardId: "low-card",
-      hyperCardId: "hyper-card",
     };
     render(
       <BuildRow
-        build={buildWithEnchantsSelected}
+        build={buildWithModifiers}
         gearData={aGearData}
         onChange={() => {}}
         onRemove={() => {}}
@@ -93,8 +87,9 @@ describe("BuildRow", () => {
 
     const initialBreakdown = screen.getByTestId("cell-breakdown");
     expect(initialBreakdown).toBeInTheDocument();
-    // default selected cell is (low=10, hyper=6)
-    expect(initialBreakdown).toHaveTextContent("Low × 10, Hyper × 6");
+    // default selected cell is (low=10, hyper=6) using the Vietnamese labels
+    expect(initialBreakdown).toHaveTextContent("tck thường × 10");
+    expect(initialBreakdown).toHaveTextContent("tck đặc biệt × 6");
 
     const firstBodyRow = within(screen.getByRole("table")).getAllByRole("row")[1];
     const firstDataCell = within(firstBodyRow).getAllByRole("cell")[0];
@@ -102,10 +97,10 @@ describe("BuildRow", () => {
 
     await userEvent.click(firstCellButton);
     const switchedBreakdown = screen.getByTestId("cell-breakdown");
-    expect(switchedBreakdown).toHaveTextContent("Low × 0, Hyper × 0");
-    // prefix and suffix rows show the affix percent values
-    expect(switchedBreakdown).toHaveTextContent("-13%");
-    expect(switchedBreakdown).toHaveTextContent("-14%");
+    expect(switchedBreakdown).toHaveTextContent("tck thường × 0");
+    expect(switchedBreakdown).toHaveTextContent("tck đặc biệt × 0");
+    // Total modifier at (0,0) with prefix -13% + suffix -14% = -27%
+    expect(switchedBreakdown).toHaveTextContent("-27%");
 
     await userEvent.click(firstCellButton);
     expect(screen.queryByTestId("cell-breakdown")).toBeNull();

@@ -10,8 +10,6 @@ describe("url encoding", () => {
       String(defaultAGearBuild.base),
       defaultAGearBuild.prefixId,
       defaultAGearBuild.suffixId,
-      defaultAGearBuild.lowCardId,
-      defaultAGearBuild.hyperCardId,
     ].join(",");
     expect(encoded).toBe(expected);
   });
@@ -37,12 +35,12 @@ describe("url encoding", () => {
   });
 
   test("falls back to defaults when a build field references an unknown id", () => {
-    const decoded = decodeBuildsFromQuery("1.5,missing-prefix,none,none,none", aGearData, defaultAGearBuild);
+    const decoded = decodeBuildsFromQuery("1.5,missing-prefix,none", aGearData, defaultAGearBuild);
     expect(decoded[0].prefixId).toBe(defaultAGearBuild.prefixId);
   });
 
   test("falls back to default base when base is not a positive number", () => {
-    const decoded = decodeBuildsFromQuery("abc,none,none,none,none;0,none,none,none,none", aGearData, defaultAGearBuild);
+    const decoded = decodeBuildsFromQuery("abc,none,none;0,none,none", aGearData, defaultAGearBuild);
     expect(decoded[0].base).toBe(defaultAGearBuild.base);
     expect(decoded[1].base).toBe(defaultAGearBuild.base);
   });

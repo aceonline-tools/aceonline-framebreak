@@ -17,8 +17,6 @@ export type Build = {
   base: number;
   prefixId: string;
   suffixId: string;
-  lowCardId: string;
-  hyperCardId: string;
 };
 
 export type GearData = {

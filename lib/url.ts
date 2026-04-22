@@ -11,8 +11,6 @@ export function encodeBuildsToQuery(builds: Build[]): string {
         String(build.base),
         build.prefixId,
         build.suffixId,
-        build.lowCardId,
-        build.hyperCardId,
       ].join(FIELD_SEPARATOR)
     )
     .join(BUILD_SEPARATOR);
@@ -28,8 +26,7 @@ export function decodeBuildsFromQuery(
   const parsedBuilds = queryValue
     .split(BUILD_SEPARATOR)
     .map(rawBuild => {
-      const [baseString, prefixId, suffixId, lowCardId, hyperCardId] =
-        rawBuild.split(FIELD_SEPARATOR);
+      const [baseString, prefixId, suffixId] = rawBuild.split(FIELD_SEPARATOR);
 
       const resolveAffixId = <T extends { id: string }>(
         items: T[],
@@ -40,11 +37,9 @@ export function decodeBuildsFromQuery(
       const parsedBase = Number(baseString);
 
       return {
-        base:        Number.isFinite(parsedBase) && parsedBase > 0 ? parsedBase : defaultBuild.base,
-        prefixId:    resolveAffixId(gearData.prefixes,   prefixId,    defaultBuild.prefixId),
-        suffixId:    resolveAffixId(gearData.suffixes,   suffixId,    defaultBuild.suffixId),
-        lowCardId:   resolveAffixId(gearData.lowCards,   lowCardId,   defaultBuild.lowCardId),
-        hyperCardId: resolveAffixId(gearData.hyperCards, hyperCardId, defaultBuild.hyperCardId),
+        base:     Number.isFinite(parsedBase) && parsedBase > 0 ? parsedBase : defaultBuild.base,
+        prefixId: resolveAffixId(gearData.prefixes, prefixId, defaultBuild.prefixId),
+        suffixId: resolveAffixId(gearData.suffixes, suffixId, defaultBuild.suffixId),
       } satisfies Build;
     });
 

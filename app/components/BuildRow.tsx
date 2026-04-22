@@ -6,6 +6,12 @@ import type { Affix, Build, EnchantCard, GearData } from "@/data/types";
 
 const NEAR_ROUND_THRESHOLD = 0.2;
 
+const LOW_LABEL = "tck thường";
+const HYPER_LABEL = "tck đặc biệt";
+const PREFIX_LABEL = "Sup đầu";
+const SUFFIX_LABEL = "Sup đuôi";
+const BASE_LABEL = "Tck cơ bản";
+
 type SelectedCell = { lowQuantity: number; hyperQuantity: number };
 
 type BuildRowProps = {
@@ -17,13 +23,13 @@ type BuildRowProps = {
 };
 
 export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true }: BuildRowProps) {
-  const selectedLowCard = gearData.lowCards.find(c => c.id === build.lowCardId);
-  const selectedHyperCard = gearData.hyperCards.find(c => c.id === build.hyperCardId);
   const selectedPrefix = gearData.prefixes.find(p => p.id === build.prefixId);
   const selectedSuffix = gearData.suffixes.find(s => s.id === build.suffixId);
+  const activeLowCard = gearData.lowCards[0];
+  const activeHyperCard = gearData.hyperCards[0];
 
-  const lowMaxQuantity = Math.max(0, ...gearData.lowCards.map(c => c.maxQuantity));
-  const hyperMaxQuantity = Math.max(0, ...gearData.hyperCards.map(c => c.maxQuantity));
+  const lowMaxQuantity = activeLowCard?.maxQuantity ?? 0;
+  const hyperMaxQuantity = activeHyperCard?.maxQuantity ?? 0;
 
   const lowQuantities = rangeInclusive(0, lowMaxQuantity);
   const hyperQuantities = rangeInclusive(0, hyperMaxQuantity);
@@ -54,23 +60,17 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
     >
       <div className="flex flex-wrap items-end gap-3">
         <StackedNumber
-          label="Base"
+          label={BASE_LABEL}
           value={build.base}
           min={0}
           step={0.01}
           onChange={nextBase => updateField("base", nextBase)}
         />
-        <StackedSelect label="Prefix" value={build.prefixId} onChange={v => updateField("prefixId", v)}>
+        <StackedSelect label={PREFIX_LABEL} value={build.prefixId} onChange={v => updateField("prefixId", v)}>
           {gearData.prefixes.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </StackedSelect>
-        <StackedSelect label="Suffix" value={build.suffixId} onChange={v => updateField("suffixId", v)}>
+        <StackedSelect label={SUFFIX_LABEL} value={build.suffixId} onChange={v => updateField("suffixId", v)}>
           {gearData.suffixes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </StackedSelect>
-        <StackedSelect label="Low card" value={build.lowCardId} onChange={v => updateField("lowCardId", v)}>
-          {gearData.lowCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </StackedSelect>
-        <StackedSelect label="Hyper card" value={build.hyperCardId} onChange={v => updateField("hyperCardId", v)}>
-          {gearData.hyperCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </StackedSelect>
 
         <button
@@ -93,9 +93,9 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                   scope="col"
                   className="sticky left-0 z-20 border-b border-r border-neutral-200 bg-neutral-100 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-500"
                 >
-                  <span className="text-neutral-400">hyper</span>
+                  <span className="text-neutral-400">{HYPER_LABEL}</span>
                   <span className="px-1 text-neutral-300">╱</span>
-                  <span className="text-neutral-400">low</span>
+                  <span className="text-neutral-400">{LOW_LABEL}</span>
                 </th>
                 {lowQuantities.map(lowQuantity => (
                   <th
@@ -184,11 +184,10 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
 
         {selectedCell && (
           <CellBreakdown
-            build={build}
             prefix={selectedPrefix}
             suffix={selectedSuffix}
-            lowCard={selectedLowCard}
-            hyperCard={selectedHyperCard}
+            lowCard={activeLowCard}
+            hyperCard={activeHyperCard}
             lowQuantity={selectedCell.lowQuantity}
             hyperQuantity={selectedCell.hyperQuantity}
             bulletsPerSecond={gearData.calculateBulletsPerSecond(
@@ -206,7 +205,6 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
 }
 
 type CellBreakdownProps = {
-  build: Build;
   prefix?: Affix;
   suffix?: Affix;
   lowCard?: EnchantCard;
@@ -218,7 +216,6 @@ type CellBreakdownProps = {
 };
 
 function CellBreakdown({
-  build,
   prefix,
   suffix,
   lowCard,
@@ -233,7 +230,6 @@ function CellBreakdown({
   const lowContribution = (lowCard?.value ?? 0) * lowQuantity;
   const hyperContribution = (hyperCard?.value ?? 0) * hyperQuantity;
   const totalModifier = prefixValue + suffixValue + lowContribution + hyperContribution;
-  const divisor = build.base * (1 + totalModifier);
 
   return (
     <div
@@ -242,7 +238,7 @@ function CellBreakdown({
     >
       <div className="mb-2 flex items-center justify-between">
         <span className="font-semibold text-neutral-700">
-          Low × {lowQuantity}, Hyper × {hyperQuantity}
+          {LOW_LABEL} × {lowQuantity}, {HYPER_LABEL} × {hyperQuantity}
         </span>
         <button
           type="button"
@@ -255,35 +251,10 @@ function CellBreakdown({
       </div>
       <dl className="grid grid-cols-[auto_1fr_auto] gap-x-3 gap-y-1 text-neutral-700">
         <BreakdownLine
-          term="Prefix"
-          description={prefix?.name ?? "(none)"}
-          value={formatSignedPercent(prefixValue)}
-        />
-        <BreakdownLine
-          term="Suffix"
-          description={suffix?.name ?? "(none)"}
-          value={formatSignedPercent(suffixValue)}
-        />
-        <BreakdownLine
-          term="Low"
-          description={`${lowCard?.name ?? "(none)"} × ${lowQuantity}`}
-          value={formatSignedPercent(lowContribution)}
-        />
-        <BreakdownLine
-          term="Hyper"
-          description={`${hyperCard?.name ?? "(none)"} × ${hyperQuantity}`}
-          value={formatSignedPercent(hyperContribution)}
-        />
-        <BreakdownLine
           term="Total"
           description="sum of modifiers"
           value={formatSignedPercent(totalModifier)}
           emphasized
-        />
-        <BreakdownLine
-          term="Divisor"
-          description={`${build.base} × (1 ${formatSignedPercent(totalModifier)})`}
-          value={Number.isFinite(divisor) ? divisor.toFixed(4) : "—"}
         />
         <BreakdownLine
           term="BPS"

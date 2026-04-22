@@ -19,11 +19,9 @@ export const aGearData: GearData = {
     { id: "suffix-15", name: "-15%", value: -0.15 },
   ],
   lowCards: [
-    { id: "none",     name: "0%",  value:  0,    maxQuantity:  0 },
     { id: "low-card", name: "-2%", value: -0.02, maxQuantity: 10 },
   ],
   hyperCards: [
-    { id: "none",       name: "0%",  value:  0,    maxQuantity: 0 },
     { id: "hyper-card", name: "-3%", value: -0.03, maxQuantity: 6 },
   ],
   calculateBulletsPerSecond: (build, data, lowQuantity, hyperQuantity) =>
@@ -31,9 +29,7 @@ export const aGearData: GearData = {
 };
 
 export const defaultAGearBuild: Build = {
-  base:        0.45,
-  prefixId:    "prefix-15",
-  suffixId:    "suffix-15",
-  lowCardId:   "low-card",
-  hyperCardId: "hyper-card",
+  base:     0.45,
+  prefixId: "prefix-15",
+  suffixId: "suffix-15",
 };

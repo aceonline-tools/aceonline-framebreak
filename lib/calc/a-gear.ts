@@ -7,12 +7,12 @@ export function calculateBulletsPerSecondForAGear(
   lowQuantity: number,
   hyperQuantity: number,
 ): number {
-  const selectedPrefix    = gearData.prefixes.find(p => p.id === build.prefixId);
-  const selectedSuffix    = gearData.suffixes.find(s => s.id === build.suffixId);
-  const selectedLowCard   = gearData.lowCards.find(c => c.id === build.lowCardId);
-  const selectedHyperCard = gearData.hyperCards.find(c => c.id === build.hyperCardId);
+  const selectedPrefix = gearData.prefixes.find(p => p.id === build.prefixId);
+  const selectedSuffix = gearData.suffixes.find(s => s.id === build.suffixId);
+  const activeLowCard = gearData.lowCards[0];
+  const activeHyperCard = gearData.hyperCards[0];
 
-  if (!selectedPrefix || !selectedSuffix || !selectedLowCard || !selectedHyperCard) {
+  if (!selectedPrefix || !selectedSuffix || !activeLowCard || !activeHyperCard) {
     return NaN;
   }
   if (!Number.isFinite(build.base) || build.base <= 0) {
@@ -20,8 +20,8 @@ export function calculateBulletsPerSecondForAGear(
   }
 
   const enchantModifier =
-    selectedLowCard.value   * lowQuantity +
-    selectedHyperCard.value * hyperQuantity;
+    activeLowCard.value   * lowQuantity +
+    activeHyperCard.value * hyperQuantity;
 
   const totalModifier =
     selectedPrefix.value + selectedSuffix.value + enchantModifier;
