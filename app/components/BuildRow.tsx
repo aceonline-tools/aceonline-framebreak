@@ -145,28 +145,24 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                       const isSelected =
                         selectedCell.lowQuantity === lowQuantity &&
                         selectedCell.hyperQuantity === hyperQuantity;
+                      const isThisMaxCell = isMaxCell({ lowQuantity, hyperQuantity });
                       const isLastCol = colIndex === lowQuantities.length - 1;
+                      const shouldShowAmber = !isSelected && (isThisMaxCell || isNearRound);
 
                       const cellClassName = [
                         "relative p-0",
                         isLastRow ? "" : "border-b border-neutral-200",
                         isLastCol ? "" : "border-r border-neutral-200",
-                        isSelected
-                          ? "bg-sky-500"
-                          : isNearRound
-                            ? "bg-amber-200"
-                            : "",
+                        isSelected ? "bg-sky-500" : shouldShowAmber ? "bg-amber-200" : "",
                       ]
                         .filter(Boolean)
                         .join(" ");
 
                       const buttonClassName = [
                         "w-full cursor-pointer px-3 py-2 text-center transition-colors",
-                        !isSelected && !isNearRound && "hover:bg-sky-50",
-                        !isSelected && isNearRound && "hover:bg-amber-300",
-                        isNearRound && !isSelected && "font-bold text-amber-900",
+                        !isSelected && !shouldShowAmber && "hover:bg-sky-50 text-neutral-400",
+                        !isSelected && shouldShowAmber && "hover:bg-amber-300 font-bold text-amber-900",
                         isSelected && "font-bold text-white",
-                        !isNearRound && !isSelected && "text-neutral-400",
                       ]
                         .filter(Boolean)
                         .join(" ");
