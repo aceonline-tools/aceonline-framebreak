@@ -6,8 +6,8 @@ import type { Affix, Build, EnchantCard, GearData } from "@/data/types";
 
 const NEAR_ROUND_THRESHOLD = 0.2;
 
-const LOW_LABEL = "tck thường";
-const HYPER_LABEL = "tck đặc biệt";
+const LOW_LABEL = "Tck thường";
+const HYPER_LABEL = "Tck DB";
 const PREFIX_LABEL = "Sup đầu";
 const SUFFIX_LABEL = "Sup đuôi";
 const BASE_LABEL = "Tck cơ bản";

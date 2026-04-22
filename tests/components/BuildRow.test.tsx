@@ -88,8 +88,8 @@ describe("BuildRow", () => {
     const initialBreakdown = screen.getByTestId("cell-breakdown");
     expect(initialBreakdown).toBeInTheDocument();
     // default selected cell is (low=10, hyper=6) using the Vietnamese labels
-    expect(initialBreakdown).toHaveTextContent("tck thường × 10");
-    expect(initialBreakdown).toHaveTextContent("tck đặc biệt × 6");
+    expect(initialBreakdown).toHaveTextContent("Tck thường × 10");
+    expect(initialBreakdown).toHaveTextContent("Tck DB × 6");
 
     const firstBodyRow = within(screen.getByRole("table")).getAllByRole("row")[1];
     const firstDataCell = within(firstBodyRow).getAllByRole("cell")[0];
@@ -97,8 +97,8 @@ describe("BuildRow", () => {
 
     await userEvent.click(firstCellButton);
     const switchedBreakdown = screen.getByTestId("cell-breakdown");
-    expect(switchedBreakdown).toHaveTextContent("tck thường × 0");
-    expect(switchedBreakdown).toHaveTextContent("tck đặc biệt × 0");
+    expect(switchedBreakdown).toHaveTextContent("Tck thường × 0");
+    expect(switchedBreakdown).toHaveTextContent("Tck DB × 0");
     // Total modifier at (0,0) with prefix -13% + suffix -14% = -27%
     expect(switchedBreakdown).toHaveTextContent("-27%");
 
