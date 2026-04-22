@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Affix, Build, GearData } from "@/data/types";
+import type { Affix, Build, GearData, SelectedCell } from "@/data/types";
 
 const NEAR_ROUND_THRESHOLD = 0.2;
 const NEAR_HALF_MIN = 0.5;
@@ -28,8 +28,6 @@ const OTHER_ENCHANT_TYPES: EnchantType[] = [
   { id: "range", name: "Cự ly", lowValue: 0.03,   hyperValue: 0.03   },
 ];
 
-type SelectedCell = { lowQuantity: number; hyperQuantity: number };
-
 type BuildRowProps = {
   build: Build;
   gearData: GearData;
@@ -42,10 +40,6 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   const selectedPrefix = gearData.prefixes.find(p => p.id === build.prefixId);
   const selectedSuffix = gearData.suffixes.find(s => s.id === build.suffixId);
 
-  const [otherEnchantId, setOtherEnchantId] = useState<string>(OTHER_ENCHANT_TYPES[0].id);
-  const activeOtherEnchant =
-    OTHER_ENCHANT_TYPES.find(type => type.id === otherEnchantId) ?? OTHER_ENCHANT_TYPES[0];
-
   const lowMaxQuantity = gearData.lowCards[0]?.maxQuantity ?? 0;
   const hyperMaxQuantity = gearData.hyperCards[0]?.maxQuantity ?? 0;
 
@@ -57,7 +51,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
     hyperQuantity: hyperMaxQuantity,
   };
 
-  const [selectedCells, setSelectedCells] = useState<SelectedCell[]>(() => {
+  const defaultSelectedCells: SelectedCell[] = (() => {
     const defaultFirstCell: SelectedCell = {
       lowQuantity: Math.min(10, lowMaxQuantity),
       hyperQuantity: Math.min(2, hyperMaxQuantity),
@@ -66,7 +60,20 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
       defaultFirstCell.lowQuantity === maxCell.lowQuantity &&
       defaultFirstCell.hyperQuantity === maxCell.hyperQuantity;
     return isSameAsMax ? [maxCell] : [defaultFirstCell, maxCell];
-  });
+  })();
+
+  const selectedCells =
+    build.selectedCells && build.selectedCells.length > 0
+      ? build.selectedCells
+      : defaultSelectedCells;
+
+  const otherEnchantId =
+    build.otherEnchantId &&
+    OTHER_ENCHANT_TYPES.some(type => type.id === build.otherEnchantId)
+      ? build.otherEnchantId
+      : OTHER_ENCHANT_TYPES[0].id;
+  const activeOtherEnchant =
+    OTHER_ENCHANT_TYPES.find(type => type.id === otherEnchantId) ?? OTHER_ENCHANT_TYPES[0];
 
   const isMaxCell = (cell: SelectedCell) =>
     cell.lowQuantity === maxCell.lowQuantity && cell.hyperQuantity === maxCell.hyperQuantity;
@@ -82,14 +89,18 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   };
 
   const toggleCellSelection = (candidateCell: SelectedCell) => {
-    setSelectedCells(previous => {
-      const alreadySelected = previous.some(selected => cellsAreEqual(selected, candidateCell));
-      if (alreadySelected) {
-        const remaining = previous.filter(selected => !cellsAreEqual(selected, candidateCell));
-        return remaining.length > 0 ? remaining : [maxCell];
-      }
-      return [...previous, candidateCell];
-    });
+    const alreadySelected = selectedCells.some(selected =>
+      cellsAreEqual(selected, candidateCell),
+    );
+    const nextCells = alreadySelected
+      ? selectedCells.filter(selected => !cellsAreEqual(selected, candidateCell))
+      : [...selectedCells, candidateCell];
+    const fallbackCells = nextCells.length > 0 ? nextCells : [maxCell];
+    updateField("selectedCells", fallbackCells);
+  };
+
+  const setOtherEnchantId = (nextId: string) => {
+    updateField("otherEnchantId", nextId);
   };
 
   const sortedSelectedCells = [...selectedCells].sort((first, second) => {
@@ -135,7 +146,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
 
       <div className="flex min-w-0 flex-col gap-3">
         <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm ring-1 ring-neutral-100">
-          <table className="border-separate border-spacing-0 text-[11px] tabular-nums sm:text-sm">
+          <table className="border-separate border-spacing-0 text-[11px] tabular-nums sm:w-full sm:text-sm">
             <thead>
               <tr>
                 <th

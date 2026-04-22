@@ -1,7 +1,7 @@
 // app/components/BuildList.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Build } from "@/data/types";
 import { aGearData, defaultAGearBuild } from "@/data/gears/a-gear";
@@ -60,8 +60,20 @@ export function BuildList() {
     );
   };
 
+  const [hasJustCopiedLink, setHasJustCopiedLink] = useState(false);
+  const copiedResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedResetTimerRef.current) clearTimeout(copiedResetTimerRef.current);
+    };
+  }, []);
+
   const copyShareableLink = async () => {
     await navigator.clipboard.writeText(window.location.href);
+    setHasJustCopiedLink(true);
+    if (copiedResetTimerRef.current) clearTimeout(copiedResetTimerRef.current);
+    copiedResetTimerRef.current = setTimeout(() => setHasJustCopiedLink(false), 1500);
   };
 
   return (
@@ -81,16 +93,22 @@ export function BuildList() {
         <button
           type="button"
           onClick={appendBuild}
-          className="rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
+          className="cursor-pointer rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
         >
           + Add build
         </button>
         <button
           type="button"
           onClick={copyShareableLink}
-          className="rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
+          aria-live="polite"
+          className={
+            "cursor-pointer rounded border px-3 py-1 text-sm transition-colors " +
+            (hasJustCopiedLink
+              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+              : "border-neutral-300 hover:bg-neutral-100")
+          }
         >
-          Copy link
+          {hasJustCopiedLink ? "Đã copy ✓" : "Copy link"}
         </button>
       </div>
     </div>

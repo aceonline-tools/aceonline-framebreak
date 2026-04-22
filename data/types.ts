@@ -14,10 +14,17 @@ export type EnchantCard = {
   maxQuantity: number;
 };
 
+export type SelectedCell = {
+  lowQuantity: number;
+  hyperQuantity: number;
+};
+
 export type Build = {
   base: number;
   prefixId: string;
   suffixId: string;
+  selectedCells?: SelectedCell[];
+  otherEnchantId?: string;
 };
 
 export type GearData = {

@@ -29,7 +29,12 @@ export const aGearData: GearData = {
 };
 
 export const defaultAGearBuild: Build = {
-  base:     0.45,
-  prefixId: "prefix-15",
-  suffixId: "suffix-15",
+  base:           0.45,
+  prefixId:       "prefix-15",
+  suffixId:       "suffix-15",
+  selectedCells: [
+    { lowQuantity: 10, hyperQuantity: 2 },
+    { lowQuantity: 10, hyperQuantity: 6 },
+  ],
+  otherEnchantId: "xp",
 };
