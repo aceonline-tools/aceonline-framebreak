@@ -14,7 +14,6 @@ export const aGearData: GearData = {
   ],
   suffixes: [
     { id: "none",      name: "0%",   value:  0    },
-    { id: "suffix-5",  name: "-5%",  value: -0.05 },
     { id: "suffix-13", name: "-13%", value: -0.13 },
     { id: "suffix-14", name: "-14%", value: -0.14 },
     { id: "suffix-15", name: "-15%", value: -0.15 },

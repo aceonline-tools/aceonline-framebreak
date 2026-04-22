@@ -1,10 +1,12 @@
 // app/components/BuildRow.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Affix, Build, GearData } from "@/data/types";
 
-const NEAR_ROUND_THRESHOLD = 0.15;
+const NEAR_ROUND_THRESHOLD = 0.2;
+const NEAR_HALF_MIN = 0.5;
+const NEAR_HALF_MAX = 0.52;
 
 const LOW_LABEL = "Tck thường";
 const HYPER_LABEL = "Tck DB";
@@ -55,29 +57,52 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
     hyperQuantity: hyperMaxQuantity,
   };
 
-  const [selectedCell, setSelectedCell] = useState<SelectedCell>(maxCell);
+  const [selectedCells, setSelectedCells] = useState<SelectedCell[]>(() => {
+    const defaultFirstCell: SelectedCell = {
+      lowQuantity: Math.min(10, lowMaxQuantity),
+      hyperQuantity: Math.min(2, hyperMaxQuantity),
+    };
+    const isSameAsMax =
+      defaultFirstCell.lowQuantity === maxCell.lowQuantity &&
+      defaultFirstCell.hyperQuantity === maxCell.hyperQuantity;
+    return isSameAsMax ? [maxCell] : [defaultFirstCell, maxCell];
+  });
 
   const isMaxCell = (cell: SelectedCell) =>
     cell.lowQuantity === maxCell.lowQuantity && cell.hyperQuantity === maxCell.hyperQuantity;
+
+  const cellsAreEqual = (first: SelectedCell, second: SelectedCell) =>
+    first.lowQuantity === second.lowQuantity && first.hyperQuantity === second.hyperQuantity;
+
+  const isCellSelected = (cell: SelectedCell) =>
+    selectedCells.some(selected => cellsAreEqual(selected, cell));
 
   const updateField = <Key extends keyof Build>(field: Key, value: Build[Key]) => {
     onChange({ ...build, [field]: value });
   };
 
   const toggleCellSelection = (candidateCell: SelectedCell) => {
-    setSelectedCell(previous => {
-      const clickingSameCell =
-        previous.lowQuantity === candidateCell.lowQuantity &&
-        previous.hyperQuantity === candidateCell.hyperQuantity;
-      if (!clickingSameCell) return candidateCell;
-      return isMaxCell(candidateCell) ? candidateCell : maxCell;
+    setSelectedCells(previous => {
+      const alreadySelected = previous.some(selected => cellsAreEqual(selected, candidateCell));
+      if (alreadySelected) {
+        const remaining = previous.filter(selected => !cellsAreEqual(selected, candidateCell));
+        return remaining.length > 0 ? remaining : [maxCell];
+      }
+      return [...previous, candidateCell];
     });
   };
+
+  const sortedSelectedCells = [...selectedCells].sort((first, second) => {
+    if (first.hyperQuantity !== second.hyperQuantity) {
+      return first.hyperQuantity - second.hyperQuantity;
+    }
+    return first.lowQuantity - second.lowQuantity;
+  });
 
   return (
     <div
       data-testid="build-row"
-      className="flex flex-col gap-4 rounded-lg border border-neutral-200 p-4"
+      className="flex min-w-0 flex-col gap-4 overflow-hidden rounded-lg border border-neutral-200 p-3 sm:p-4"
     >
       <div className="flex flex-wrap items-end gap-3">
         <StackedNumber
@@ -108,33 +133,20 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         </button>
       </div>
 
-      <div className="flex flex-col items-start gap-3 overflow-x-auto">
-        <ul className="max-w-2xl list-disc space-y-1 pl-5 text-xs leading-relaxed text-neutral-500">
-          <li>
-            Hàng ngang là <strong className="font-semibold text-neutral-700">Tck thường</strong>.
-          </li>
-          <li>
-            Hàng dọc là <strong className="font-semibold text-neutral-700">Tck DB</strong>.
-          </li>
-          <li>
-            <span className="rounded bg-amber-200 px-1 font-semibold text-amber-900">Bôi vàng</span>{" "}
-            là các mốc tròn đạn.
-          </li>
-          <li>Bấm vào ô để xem chi tiết.</li>
-        </ul>
-        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm ring-1 ring-neutral-100">
-          <table className="border-separate border-spacing-0 text-sm tabular-nums">
+      <div className="flex min-w-0 flex-col gap-3">
+        <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm ring-1 ring-neutral-100">
+          <table className="border-separate border-spacing-0 text-[11px] tabular-nums sm:text-sm">
             <thead>
               <tr>
                 <th
                   scope="col"
-                  className="sticky left-0 z-20 border-b border-r border-neutral-200 bg-neutral-100 px-3 py-2 text-left text-[11px] font-semibold text-neutral-600"
+                  className="sticky left-0 z-20 border-b border-r border-neutral-200 bg-neutral-100 px-1.5 py-1 text-left text-[9px] font-semibold text-neutral-600 sm:px-3 sm:py-2 sm:text-[11px]"
                 >
-                  <div className="flex items-center gap-1 whitespace-nowrap">
+                  <div className="flex items-center gap-0.5 whitespace-nowrap sm:gap-1">
                     <span aria-hidden="true">→</span>
                     <span>{LOW_LABEL}</span>
                   </div>
-                  <div className="flex items-center gap-1 whitespace-nowrap">
+                  <div className="flex items-center gap-0.5 whitespace-nowrap sm:gap-1">
                     <span aria-hidden="true">↓</span>
                     <span>{HYPER_LABEL}</span>
                   </div>
@@ -143,7 +155,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                   <th
                     key={lowQuantity}
                     scope="col"
-                    className="border-b border-neutral-200 bg-neutral-100 px-3 py-2 text-center text-xs font-semibold text-neutral-600"
+                    className="border-b border-neutral-200 bg-neutral-100 px-1.5 py-1 text-center text-[10px] font-semibold text-neutral-600 sm:px-3 sm:py-2 sm:text-xs"
                   >
                     {lowQuantity}
                   </th>
@@ -158,7 +170,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                     <th
                       scope="row"
                       className={
-                        "sticky left-0 z-10 border-r border-neutral-200 bg-neutral-100 px-3 py-2 text-center text-xs font-semibold text-neutral-600 " +
+                        "sticky left-0 z-10 border-r border-neutral-200 bg-neutral-100 px-1.5 py-1 text-center text-[10px] font-semibold text-neutral-600 sm:px-3 sm:py-2 sm:text-xs " +
                         (isLastRow ? "" : "border-b")
                       }
                     >
@@ -173,13 +185,17 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                       );
                       const isFiniteValue = Number.isFinite(bulletsPerSecond);
                       const displayValue = isFiniteValue ? bulletsPerSecond.toFixed(2) : "—";
-                      const isNearRound = isFiniteValue && isNearRoundNumber(bulletsPerSecond);
-                      const isSelected =
-                        selectedCell.lowQuantity === lowQuantity &&
-                        selectedCell.hyperQuantity === hyperQuantity;
+                      const isNearInteger = isFiniteValue && isNearIntegerNumber(bulletsPerSecond);
+                      const isNearHalf = isFiniteValue && isNearHalfNumber(bulletsPerSecond);
+                      const isSelected = isCellSelected({ lowQuantity, hyperQuantity });
                       const isThisMaxCell = isMaxCell({ lowQuantity, hyperQuantity });
                       const isLastCol = colIndex === lowQuantities.length - 1;
-                      const shouldShowAmber = !isSelected && (isThisMaxCell || isNearRound);
+                      const isFirstRow = rowIndex === 0;
+                      const isOnHighlightEdge = isFirstRow || isLastCol;
+                      const shouldShowAmber =
+                        !isSelected &&
+                        isOnHighlightEdge &&
+                        (isThisMaxCell || isNearInteger || isNearHalf);
 
                       const cellClassName = [
                         "relative p-0",
@@ -191,7 +207,7 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                         .join(" ");
 
                       const buttonClassName = [
-                        "w-full cursor-pointer px-3 py-2 text-center transition-colors",
+                        "w-full cursor-pointer px-1.5 py-1 text-center transition-colors sm:px-3 sm:py-2",
                         !isSelected && !shouldShowAmber && "hover:bg-sky-50 text-neutral-400",
                         !isSelected && shouldShowAmber && "hover:bg-amber-300 font-bold text-amber-900",
                         isSelected && "font-bold text-white",
@@ -219,21 +235,26 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
           </table>
         </div>
 
-        <CellBreakdown
-          otherEnchant={activeOtherEnchant}
-          prefix={selectedPrefix}
-          suffix={selectedSuffix}
-          lowQuantity={selectedCell.lowQuantity}
-          hyperQuantity={selectedCell.hyperQuantity}
-          lowMaxQuantity={lowMaxQuantity}
-          hyperMaxQuantity={hyperMaxQuantity}
-          bulletsPerSecond={gearData.calculateBulletsPerSecond(
-            build,
-            gearData,
-            selectedCell.lowQuantity,
-            selectedCell.hyperQuantity,
-          )}
-        />
+        <div className="flex flex-wrap gap-3">
+          {sortedSelectedCells.map(cell => (
+            <CellBreakdown
+              key={`${cell.lowQuantity}-${cell.hyperQuantity}`}
+              otherEnchant={activeOtherEnchant}
+              prefix={selectedPrefix}
+              suffix={selectedSuffix}
+              lowQuantity={cell.lowQuantity}
+              hyperQuantity={cell.hyperQuantity}
+              lowMaxQuantity={lowMaxQuantity}
+              hyperMaxQuantity={hyperMaxQuantity}
+              bulletsPerSecond={gearData.calculateBulletsPerSecond(
+                build,
+                gearData,
+                cell.lowQuantity,
+                cell.hyperQuantity,
+              )}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -275,28 +296,37 @@ function CellBreakdown({
     prefixBonus +
     suffixBonus;
 
+  const remainingSlotsLabel = formatRemainingSlotsLabel(
+    otherEnchant.name,
+    remainingLowSlots,
+    remainingHyperSlots,
+  );
+  const tckSlotsLabel = formatRemainingSlotsLabel("Tck", lowQuantity, hyperQuantity) ?? "Tck";
+
   return (
     <div
       data-testid="cell-breakdown"
       className="w-fit min-w-[220px] rounded-md border border-neutral-200 bg-neutral-50 p-3 text-sm"
     >
-      <div className="mb-2 font-semibold text-neutral-700">
-        {LOW_LABEL} × {lowQuantity}, {HYPER_LABEL} × {hyperQuantity}
+      <div className="mb-2 font-semibold text-neutral-700 tabular-nums">
+        {Number.isFinite(bulletsPerSecond) ? `${bulletsPerSecond.toFixed(2)} v/s` : "— v/s"}
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-neutral-700">
+        {remainingSlotsLabel && (
+          <BreakdownLine
+            term={remainingSlotsLabel}
+            value={formatSignedPercent(otherEnchantValue)}
+            emphasized
+          />
+        )}
         <BreakdownLine
-          term="Tck"
+          term={tckSlotsLabel}
           value={formatSignedPercent(tckTotalModifier)}
           emphasized
         />
         <BreakdownLine
-          term="đạn trên giây"
-          value={Number.isFinite(bulletsPerSecond) ? bulletsPerSecond.toFixed(4) : "—"}
-          emphasized
-        />
-        <BreakdownLine
-          term={`${otherEnchant.name} (${remainingLowSlots}×thường + ${remainingHyperSlots}×DB)`}
-          value={formatSignedPercent(otherEnchantValue)}
+          term="Đạn trên giây"
+          value={Number.isFinite(bulletsPerSecond) ? `${bulletsPerSecond.toFixed(2)} v/s` : "—"}
           emphasized
         />
       </dl>
@@ -311,13 +341,25 @@ type BreakdownLineProps = {
 };
 
 function BreakdownLine({ term, value, emphasized = false }: BreakdownLineProps) {
-  const emphasisClass = emphasized ? "font-semibold text-neutral-900" : "";
+  const valueEmphasisClass = emphasized ? "font-semibold text-neutral-900" : "";
   return (
     <>
-      <dt className={`text-neutral-500 ${emphasisClass}`}>{term}</dt>
-      <dd className={`text-right tabular-nums ${emphasisClass}`}>{value}</dd>
+      <dt className="text-neutral-500">{term}</dt>
+      <dd className={`text-right tabular-nums ${valueEmphasisClass}`}>{value}</dd>
     </>
   );
+}
+
+function formatRemainingSlotsLabel(
+  enchantName: string,
+  remainingLowSlots: number,
+  remainingHyperSlots: number,
+): string | null {
+  const parts: string[] = [];
+  if (remainingLowSlots > 0) parts.push(`${remainingLowSlots}×thường`);
+  if (remainingHyperSlots > 0) parts.push(`${remainingHyperSlots}×DB`);
+  if (parts.length === 0) return null;
+  return `${enchantName} (${parts.join(" + ")})`;
 }
 
 function formatSignedPercent(value: number): string {
@@ -337,9 +379,14 @@ function rangeInclusive(startInclusive: number, endInclusive: number): number[] 
   return values;
 }
 
-function isNearRoundNumber(value: number): boolean {
+function isNearIntegerNumber(value: number): boolean {
   const fractionAboveInteger = value - Math.floor(value);
   return fractionAboveInteger < NEAR_ROUND_THRESHOLD;
+}
+
+function isNearHalfNumber(value: number): boolean {
+  const fractionAboveInteger = value - Math.floor(value);
+  return fractionAboveInteger >= NEAR_HALF_MIN && fractionAboveInteger <= NEAR_HALF_MAX;
 }
 
 
@@ -374,28 +421,46 @@ type StackedNumberProps = {
   onChange: (value: number) => void;
 };
 
-function StackedNumber({ label, value, min = 0, max, step = 1, onChange }: StackedNumberProps) {
+function StackedNumber({ label, value, min = 0, max, onChange }: StackedNumberProps) {
+  const [rawInput, setRawInput] = useState<string>(() => String(value));
+
+  useEffect(() => {
+    const parsedRaw = parseDecimalInput(rawInput);
+    if (parsedRaw === null || parsedRaw !== value) {
+      setRawInput(String(value));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextRaw = event.target.value;
+    setRawInput(nextRaw);
+
+    const parsed = parseDecimalInput(nextRaw);
+    if (parsed === null) return;
+
+    const lowerBound = parsed < min ? min : parsed;
+    const clamped = max !== undefined && lowerBound > max ? max : lowerBound;
+    if (clamped !== value) onChange(clamped);
+  };
+
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="text-xs font-medium text-neutral-500">{label}</span>
       <input
-        type="number"
+        type="text"
+        inputMode="decimal"
         className="w-24 rounded border border-neutral-300 px-2 py-1"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={event => {
-          const parsed = Number(event.target.value);
-          if (!Number.isFinite(parsed)) {
-            onChange(min);
-            return;
-          }
-          const lowerBound = parsed < min ? min : parsed;
-          const clamped = max !== undefined && lowerBound > max ? max : lowerBound;
-          onChange(clamped);
-        }}
+        value={rawInput}
+        onChange={handleChange}
       />
     </label>
   );
+}
+
+function parseDecimalInput(raw: string): number | null {
+  const normalized = raw.replace(",", ".").trim();
+  if (normalized === "" || normalized === "." || normalized === "-") return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
 }
