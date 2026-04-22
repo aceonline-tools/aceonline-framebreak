@@ -204,8 +204,8 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
                       const isSelected = isCellSelected({ lowQuantity, hyperQuantity });
                       const isThisMaxCell = isMaxCell({ lowQuantity, hyperQuantity });
                       const isLastCol = colIndex === lowQuantities.length - 1;
-                      const isFirstRow = rowIndex === 0;
-                      const isOnHighlightEdge = isFirstRow || isLastCol;
+                      const isFirstCol = colIndex === 0;
+                      const isOnHighlightEdge = isLastRow || isFirstCol;
                       const shouldShowAmber =
                         !isSelected &&
                         isOnHighlightEdge &&
