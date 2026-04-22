@@ -115,27 +115,38 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   const [isFullGridVisible, setIsFullGridVisible] = useState(false);
 
   const totalCardsMax = lowMaxQuantity + hyperMaxQuantity;
-  const combinedCardProgression = rangeInclusive(1, totalCardsMax).map(totalCards => {
-    const lowQuantity = Math.min(totalCards, lowMaxQuantity);
-    const hyperQuantity = totalCards - lowQuantity;
-    return {
-      totalCards,
-      lowQuantity,
-      hyperQuantity,
-      bulletsPerSecond: gearData.calculateBulletsPerSecond(
-        build,
-        gearData,
+  const combinedCardProgression = rangeInclusive(1, totalCardsMax)
+    .reverse()
+    .map(totalCards => {
+      const lowQuantity = Math.min(totalCards, lowMaxQuantity);
+      const hyperQuantity = totalCards - lowQuantity;
+      return {
+        totalCards,
         lowQuantity,
         hyperQuantity,
-      ),
-    };
-  });
+        bulletsPerSecond: gearData.calculateBulletsPerSecond(
+          build,
+          gearData,
+          lowQuantity,
+          hyperQuantity,
+        ),
+      };
+    });
 
   return (
     <div
       data-testid="build-row"
-      className="flex min-w-0 flex-col gap-4 overflow-hidden rounded-lg border border-neutral-200 p-3 sm:p-4"
+      className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-lg border border-neutral-200 p-3 pr-10 sm:p-4 sm:pr-12"
     >
+      <button
+        type="button"
+        aria-label="Remove build"
+        onClick={onRemove}
+        disabled={!canRemove}
+        className="absolute right-2 top-2 cursor-pointer rounded px-2 py-1 text-neutral-500 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+      >
+        ✕
+      </button>
       <div className="flex flex-wrap items-end gap-3">
         <StackedNumber
           label={BASE_LABEL}
@@ -153,16 +164,6 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         <StackedSelect label={ENCHANT_LABEL} value={otherEnchantId} onChange={setOtherEnchantId}>
           {OTHER_ENCHANT_TYPES.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
         </StackedSelect>
-
-        <button
-          type="button"
-          aria-label="Remove build"
-          onClick={onRemove}
-          disabled={!canRemove}
-          className="ml-auto self-start rounded px-2 py-1 text-neutral-500 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-        >
-          ✕
-        </button>
       </div>
 
       <div className="flex min-w-0 flex-col gap-3">
@@ -386,17 +387,14 @@ function FocusedList({
         <span>{title}</span>
         <span className="text-[10px] font-medium text-neutral-500">{quantityHeader}</span>
       </div>
-      <div className="flex gap-1 overflow-x-auto p-2 text-sm tabular-nums">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(52px,1fr))] gap-1 p-2 text-sm tabular-nums">
         {entries.map(entry => {
           const isFiniteValue = Number.isFinite(entry.bulletsPerSecond);
           const displayValue = isFiniteValue ? entry.bulletsPerSecond.toFixed(2) : "—";
-          const isNearInteger = isFiniteValue && isNearIntegerNumber(entry.bulletsPerSecond);
-          const isNearHalf = isFiniteValue && isNearHalfNumber(entry.bulletsPerSecond);
           const isSelected = isCellSelected({
             lowQuantity: entry.lowQuantity,
             hyperQuantity: entry.hyperQuantity,
           });
-          const shouldShowAmber = !isSelected && (isNearInteger || isNearHalf);
 
           const handleClick = () => {
             onToggleCell({
@@ -415,9 +413,7 @@ function FocusedList({
 
           const cellBackground = isSelected
             ? "bg-sky-500 text-white border-sky-600"
-            : shouldShowAmber
-              ? "bg-amber-200 text-amber-900 font-semibold border-amber-300"
-              : "bg-white text-neutral-700 hover:bg-sky-50 border-neutral-200";
+            : "bg-white text-neutral-700 hover:bg-sky-50 border-neutral-200";
 
           return (
             <button
@@ -427,10 +423,13 @@ function FocusedList({
               onMouseEnter={handleMouseEnter}
               onMouseLeave={onHoverLeave}
               aria-pressed={isSelected}
-              className={`flex min-w-[52px] shrink-0 cursor-pointer flex-col items-center gap-0.5 rounded-md border px-2 py-1 text-xs transition-colors ${cellBackground}`}
+              className={`flex cursor-pointer flex-col items-center gap-0.5 rounded-md border px-2 py-1 text-xs transition-colors ${cellBackground}`}
             >
               <span className="text-[10px] opacity-70">{quantityExtractor(entry)}</span>
-              <span className="font-semibold">{displayValue}</span>
+              <span className="font-semibold">
+                {displayValue}
+                <span className="ml-0.5 text-[10px] font-normal opacity-70">v/s</span>
+              </span>
             </button>
           );
         })}
@@ -488,11 +487,9 @@ function CellHoverTooltip({
     suffixBonus;
 
   const tckSlotsLabel = formatRemainingSlotsLabel("Tck", lowQuantity, hyperQuantity) ?? "Tck";
-  const enchantSlotsLabel = formatRemainingSlotsLabel(
-    otherEnchant.name,
-    remainingLowSlots,
-    remainingHyperSlots,
-  );
+  const enchantSlotsLabel =
+    formatRemainingSlotsLabel(otherEnchant.name, remainingLowSlots, remainingHyperSlots) ??
+    otherEnchant.name;
 
   return (
     <div
@@ -509,18 +506,14 @@ function CellHoverTooltip({
         {Number.isFinite(bulletsPerSecond) ? `${bulletsPerSecond.toFixed(2)} v/s` : "— v/s"}
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+        <dt className="text-neutral-500">{enchantSlotsLabel}</dt>
+        <dd className="text-right font-semibold tabular-nums">
+          {formatSignedPercent(otherEnchantValue)}
+        </dd>
         <dt className="text-neutral-500">{tckSlotsLabel}</dt>
         <dd className="text-right font-semibold tabular-nums">
           {formatSignedPercent(tckTotalModifier)}
         </dd>
-        {enchantSlotsLabel && (
-          <>
-            <dt className="text-neutral-500">{enchantSlotsLabel}</dt>
-            <dd className="text-right font-semibold tabular-nums">
-              {formatSignedPercent(otherEnchantValue)}
-            </dd>
-          </>
-        )}
       </dl>
     </div>
   );

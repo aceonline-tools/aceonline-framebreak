@@ -30,40 +30,36 @@ export function WelcomeCard() {
 
   return (
     <div className="mb-6 flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs italic text-neutral-500">
-          Lưu ý: công cụ không chính thức, do cá nhân phát triển. Kết quả chỉ mang tính tham
-          khảo và có thể sai số nhẹ so với thực tế trong game.
-        </p>
-        <button
-          type="button"
-          onClick={openCard}
-          aria-expanded={isCardOpen}
-          className="shrink-0 cursor-pointer rounded-full border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-600 hover:bg-neutral-100"
-        >
-          ? Hướng dẫn
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={openCard}
+        aria-expanded={isCardOpen}
+        className="fixed right-3 top-3 z-40 cursor-pointer rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-medium text-neutral-600 shadow-sm hover:bg-neutral-100"
+      >
+        ? Hướng dẫn
+      </button>
+      <p className="text-xs italic text-neutral-500">
+        Lưu ý: công cụ không chính thức, do cá nhân phát triển. Kết quả chỉ mang tính tham khảo
+        và có thể sai số nhẹ so với thực tế trong game.
+      </p>
 
       {isCardOpen && (
         <section
           role="region"
           aria-label="Hướng dẫn sử dụng"
-          className="rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-neutral-700"
+          className="relative rounded-lg border border-sky-200 bg-sky-50 p-4 pr-10 text-sm text-neutral-700"
         >
-          <div className="mb-2 flex items-start justify-between gap-3">
-            <h2 className="text-base font-semibold text-neutral-900">
-              Chào mừng đến với Ace Online — Tính đạn AG
-            </h2>
-            <button
-              type="button"
-              aria-label="Đóng hướng dẫn"
-              onClick={closeCard}
-              className="cursor-pointer rounded px-2 py-0.5 text-neutral-500 hover:bg-sky-100 hover:text-neutral-700"
-            >
-              ✕
-            </button>
-          </div>
+          <button
+            type="button"
+            aria-label="Đóng hướng dẫn"
+            onClick={closeCard}
+            className="absolute right-2 top-2 cursor-pointer rounded px-2 py-0.5 text-neutral-500 hover:bg-sky-100 hover:text-neutral-700"
+          >
+            ✕
+          </button>
+          <h2 className="mb-2 text-base font-semibold text-neutral-900">
+            Chào mừng đến với Ace Online — Tính đạn AG
+          </h2>
           <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed">
             <li>
               Nhập <strong className="font-semibold">Tck cơ bản</strong> của vũ khí (ví dụ BS:
@@ -82,12 +78,7 @@ export function WelcomeCard() {
               <strong className="font-semibold">Tck DB</strong>.
             </li>
             <li>
-              Ô được{" "}
-              <span className="rounded bg-amber-200 px-1 font-semibold text-amber-900">
-                bôi vàng
-              </span>{" "}
-              là các mốc tròn đạn. Bấm vào nhiều ô để so sánh chi tiết cùng lúc; bấm lại để bỏ
-              chọn.
+              Bấm vào nhiều ô để so sánh chi tiết cùng lúc; bấm lại để bỏ chọn.
             </li>
             <li>
               Nên chọn các mốc có số dư bé (ví dụ{" "}
