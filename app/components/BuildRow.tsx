@@ -91,11 +91,16 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
               <tr>
                 <th
                   scope="col"
-                  className="sticky left-0 z-20 border-b border-r border-neutral-200 bg-neutral-100 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-500"
+                  className="sticky left-0 z-20 border-b border-r border-neutral-200 bg-neutral-100 px-3 py-2 text-left text-[11px] font-semibold text-neutral-600"
                 >
-                  <span className="text-neutral-400">{HYPER_LABEL}</span>
-                  <span className="px-1 text-neutral-300">╱</span>
-                  <span className="text-neutral-400">{LOW_LABEL}</span>
+                  <div className="flex items-center gap-1 whitespace-nowrap">
+                    <span aria-hidden="true">↓</span>
+                    <span>{HYPER_LABEL}</span>
+                  </div>
+                  <div className="flex items-center gap-1 whitespace-nowrap">
+                    <span aria-hidden="true">→</span>
+                    <span>{LOW_LABEL}</span>
+                  </div>
                 </th>
                 {lowQuantities.map(lowQuantity => (
                   <th
