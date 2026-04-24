@@ -14,8 +14,10 @@ export const aGearData: GearData = {
     { id: "bio",          name: "Bio",           values: { tck: -0.15, cx: 0.14 }            },
     { id: "attack",       name: "Attack",        values: { tck: -0.14, cx: 0.15 }            },
     { id: "squire",       name: "Squire",        values: { tck: -0.15, damage: 0.14 }        },
+    { id: "major",        name: "Major",         values: { tck: -0.14, damage: 0.15 }        },
     { id: "attack-luck",  name: "Attack Luck",   values: { tck: -0.14, cx: 0.15, damage: 0.05 } },
     { id: "squire-luck",  name: "Squire Luck",   values: { tck: -0.15, cx: 0.05, damage: 0.14 } },
+    { id: "major-luck",   name: "Major Luck",    values: { tck: -0.14, cx: 0.05, damage: 0.15 } },
     { id: "bandit",       name: "Bandit",        values: { tck: -0.05, xp: 0.15 }            },
   ],
   suffixes: [
@@ -23,8 +25,10 @@ export const aGearData: GearData = {
     { id: "bio",          name: "Of Bio",            values: { tck: -0.15, cx: 0.14 }            },
     { id: "attack",       name: "Of Attack",         values: { tck: -0.14, cx: 0.15 }            },
     { id: "squire",       name: "Of Squire",         values: { tck: -0.15, damage: 0.14 }        },
+    { id: "major",        name: "Of Major",          values: { tck: -0.14, damage: 0.15 }        },
     { id: "attack-luck",  name: "Of Attack Luck",    values: { tck: -0.14, cx: 0.15, damage: 0.05 } },
     { id: "squire-luck",  name: "Of Squire Luck",    values: { tck: -0.15, cx: 0.05, damage: 0.14 } },
+    { id: "major-luck",   name: "Of Major Luck",     values: { tck: -0.14, cx: 0.05, damage: 0.15 } },
   ],
   lowCards: [
     { id: "low-card", name: "-2%", value: -0.02, maxQuantity: 10 },
