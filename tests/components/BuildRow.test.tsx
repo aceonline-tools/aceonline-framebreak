@@ -48,7 +48,9 @@ describe("BuildRow", () => {
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={handleChange} onRemove={() => {}} />
     );
 
-    await userEvent.selectOptions(screen.getByLabelText(/sup đầu/i), "attack");
+    const prefixControl = screen.getByLabelText(/sup đầu/i);
+    await userEvent.click(prefixControl);
+    await userEvent.click(await screen.findByText("Attack", { selector: "div" }));
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ prefixId: "attack" }));
   });
 
@@ -58,8 +60,10 @@ describe("BuildRow", () => {
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={handleChange} onRemove={() => {}} />
     );
 
-    await userEvent.selectOptions(screen.getByLabelText(/vũ khí/i), "rantee");
-    expect(handleChange).toHaveBeenLastCalledWith(expect.objectContaining({ base: 0.3 }));
+    const weaponControl = screen.getByLabelText(/vũ khí/i);
+    await userEvent.click(weaponControl);
+    await userEvent.click(await screen.findByText("Rantee1", { selector: "div" }));
+    expect(handleChange).toHaveBeenLastCalledWith(expect.objectContaining({ base: 0.3, weaponId: "rantee-1" }));
   });
 
   test("calls onRemove when the delete button is clicked", async () => {

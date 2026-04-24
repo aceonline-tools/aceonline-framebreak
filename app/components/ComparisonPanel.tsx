@@ -2,6 +2,7 @@
 "use client";
 
 import type { Build, GearData, SelectedCell } from "@/data/types";
+import { PREFIXES, SUFFIXES } from "@/data/affixes";
 import {
   CellBreakdown,
   resolveActiveEnchant,
@@ -77,9 +78,11 @@ function ComparisonRow({
   hyperMaxQuantity,
 }: ComparisonRowProps) {
   const { build } = entry;
-  const prefix = gearData.prefixes.find(p => p.id === build.prefixId);
-  const suffix = gearData.suffixes.find(s => s.id === build.suffixId);
-  const weapon = gearData.weapons.find(w => w.values.tck === build.base);
+  const prefix = PREFIXES.find(p => p.id === build.prefixId);
+  const suffix = SUFFIXES.find(s => s.id === build.suffixId);
+  const weapon =
+    gearData.weapons.find(w => w.id === build.weaponId) ??
+    gearData.weapons.find(w => w.values.tck === build.base);
   const activeOtherEnchant = resolveActiveEnchant(build);
 
   const selectedCells = resolveSelectedCells(build, lowMaxQuantity, hyperMaxQuantity);

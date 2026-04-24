@@ -21,6 +21,7 @@ export type Weapon = {
   // Stat values keyed by stat id. `tck` is the base TCK rate (e.g. 0.45),
   // other keys are baseline stat contributions as decimals (0.9 = +90%).
   values: Partial<Record<string, number>>;
+  color?: string;
 };
 
 export type SelectedCell = {
@@ -34,14 +35,13 @@ export type Build = {
   suffixId: string;
   selectedCells?: SelectedCell[];
   otherEnchantId?: string;
+  weaponId?: string;
 };
 
 export type GearData = {
   id: "a" | "b" | "i" | "m";
   name: string;
   weapons: Weapon[];
-  prefixes: Affix[];
-  suffixes: Affix[];
   lowCards: EnchantCard[];
   hyperCards: EnchantCard[];
   calculateBulletsPerSecond: (

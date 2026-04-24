@@ -1,5 +1,6 @@
 // lib/url.ts
-import type { Build, GearData, SelectedCell } from "@/data/types";
+import type { Build, SelectedCell } from "@/data/types";
+import { PREFIXES, SUFFIXES } from "@/data/affixes";
 
 const FIELD_SEPARATOR = ",";
 const BUILD_SEPARATOR = ";";
@@ -43,6 +44,7 @@ export function encodeBuildsToQuery(builds: Build[]): string {
         build.suffixId,
         encodeSelectedCells(build.selectedCells),
         build.otherEnchantId ?? "",
+        build.weaponId ?? "",
       ];
       return trimTrailingEmptyFields(fields).join(FIELD_SEPARATOR);
     })
@@ -51,7 +53,6 @@ export function encodeBuildsToQuery(builds: Build[]): string {
 
 export function decodeBuildsFromQuery(
   queryValue: string,
-  gearData: GearData,
   defaultBuild: Build,
 ): Build[] {
   if (!queryValue) return [defaultBuild];
@@ -59,7 +60,7 @@ export function decodeBuildsFromQuery(
   const parsedBuilds = queryValue
     .split(BUILD_SEPARATOR)
     .map(rawBuild => {
-      const [baseString, prefixId, suffixId, cellsString, otherEnchantIdString] =
+      const [baseString, prefixId, suffixId, cellsString, otherEnchantIdString, weaponIdString] =
         rawBuild.split(FIELD_SEPARATOR);
 
       const resolveAffixId = <T extends { id: string }>(
@@ -72,10 +73,11 @@ export function decodeBuildsFromQuery(
 
       return {
         base:           Number.isFinite(parsedBase) && parsedBase > 0 ? parsedBase : defaultBuild.base,
-        prefixId:       resolveAffixId(gearData.prefixes, prefixId, defaultBuild.prefixId),
-        suffixId:       resolveAffixId(gearData.suffixes, suffixId, defaultBuild.suffixId),
+        prefixId:       resolveAffixId(PREFIXES, prefixId, defaultBuild.prefixId),
+        suffixId:       resolveAffixId(SUFFIXES, suffixId, defaultBuild.suffixId),
         selectedCells:  decodeSelectedCells(cellsString) ?? defaultBuild.selectedCells,
         otherEnchantId: otherEnchantIdString || defaultBuild.otherEnchantId,
+        weaponId:       weaponIdString || undefined,
       } satisfies Build;
     });
 

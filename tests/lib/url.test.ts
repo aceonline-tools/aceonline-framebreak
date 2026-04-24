@@ -25,22 +25,22 @@ describe("url encoding", () => {
       { ...defaultAGearBuild, base: 2.25 },
     ];
     const encoded = encodeBuildsToQuery(original);
-    const decoded = decodeBuildsFromQuery(encoded, aGearData, defaultAGearBuild);
+    const decoded = decodeBuildsFromQuery(encoded, defaultAGearBuild);
     expect(decoded).toEqual(original);
   });
 
   test("falls back to the default build when the query is empty", () => {
-    const decoded = decodeBuildsFromQuery("", aGearData, defaultAGearBuild);
+    const decoded = decodeBuildsFromQuery("", defaultAGearBuild);
     expect(decoded).toEqual([defaultAGearBuild]);
   });
 
   test("falls back to defaults when a build field references an unknown id", () => {
-    const decoded = decodeBuildsFromQuery("1.5,missing-prefix,none", aGearData, defaultAGearBuild);
+    const decoded = decodeBuildsFromQuery("1.5,missing-prefix,none", defaultAGearBuild);
     expect(decoded[0].prefixId).toBe(defaultAGearBuild.prefixId);
   });
 
   test("falls back to default base when base is not a positive number", () => {
-    const decoded = decodeBuildsFromQuery("abc,none,none;0,none,none", aGearData, defaultAGearBuild);
+    const decoded = decodeBuildsFromQuery("abc,none,none;0,none,none", defaultAGearBuild);
     expect(decoded[0].base).toBe(defaultAGearBuild.base);
     expect(decoded[1].base).toBe(defaultAGearBuild.base);
   });

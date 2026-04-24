@@ -1,14 +1,18 @@
 // tests/calc/a-gear.test.ts
-import { describe, expect, test } from "vitest";
-import { calculateBulletsPerSecondForAGear } from "@/lib/calc/a-gear";
+import { describe, expect, test, vi } from "vitest";
 import type { GearData } from "@/data/types";
+
+vi.mock("@/data/affixes", () => ({
+  PREFIXES: [{ id: "rapid", name: "Rapid", values: { tck: -0.10 } }],
+  SUFFIXES: [{ id: "burst", name: "Burst", values: { tck: -0.15 } }],
+}));
+
+const { calculateBulletsPerSecondForAGear } = await import("@/lib/calc/a-gear");
 
 const sampleGearData: GearData = {
   id: "a",
   name: "A-Gear",
   weapons:    [{ id: "bs",         name: "BS",         values: { tck: 1.5 } }],
-  prefixes:   [{ id: "rapid",      name: "Rapid",      values: { tck: -0.10 } }],
-  suffixes:   [{ id: "burst",      name: "Burst",      values: { tck: -0.15 } }],
   lowCards:   [{ id: "low-card",   name: "Low Card",   value: -0.02, maxQuantity: 10 }],
   hyperCards: [{ id: "hyper-card", name: "Hyper Card", value: -0.05, maxQuantity: 7 }],
   calculateBulletsPerSecond: (build, data, lowQuantity, hyperQuantity) =>

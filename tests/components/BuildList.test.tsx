@@ -95,7 +95,8 @@ describe("BuildList", () => {
     );
 
     expect(screen.getAllByTestId("build-row")).toHaveLength(1);
-    const weaponSelect = screen.getByLabelText(/vũ khí/i) as HTMLSelectElement;
-    expect(weaponSelect.value).toBe("rantee");
+    const weaponLabel = screen.getByText(/vũ khí/i);
+    const weaponField = weaponLabel.parentElement as HTMLElement;
+    expect(weaponField).toHaveTextContent("Rantee1");
   });
 });

@@ -1,8 +1,10 @@
 // app/components/BuildRow.tsx
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import Select, { type SingleValue, type StylesConfig } from "react-select";
 import type { Affix, Build, GearData, SelectedCell } from "@/data/types";
+import { PREFIXES, SUFFIXES } from "@/data/affixes";
 import {
   type EnchantType,
   OTHER_ENCHANT_TYPES,
@@ -32,8 +34,8 @@ type BuildRowProps = {
 };
 
 export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true }: BuildRowProps) {
-  const selectedPrefix = gearData.prefixes.find(p => p.id === build.prefixId);
-  const selectedSuffix = gearData.suffixes.find(s => s.id === build.suffixId);
+  const selectedPrefix = PREFIXES.find(p => p.id === build.prefixId);
+  const selectedSuffix = SUFFIXES.find(s => s.id === build.suffixId);
 
   const lowMaxQuantity = gearData.lowCards[0]?.maxQuantity ?? 0;
   const hyperMaxQuantity = gearData.hyperCards[0]?.maxQuantity ?? 0;
@@ -52,14 +54,16 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
   const otherEnchantId = activeOtherEnchant.id;
 
   const selectedWeapon =
-    gearData.weapons.find(weapon => weapon.values.tck === build.base) ?? gearData.weapons[0];
+    gearData.weapons.find(weapon => weapon.id === build.weaponId) ??
+    gearData.weapons.find(weapon => weapon.values.tck === build.base) ??
+    gearData.weapons[0];
   const selectedWeaponId = selectedWeapon?.id ?? "";
 
   const handleWeaponChange = (nextWeaponId: string) => {
     const nextWeapon = gearData.weapons.find(weapon => weapon.id === nextWeaponId);
     const nextBase = nextWeapon?.values.tck;
     if (nextBase === undefined) return;
-    updateField("base", nextBase);
+    onChange({ ...build, weaponId: nextWeaponId, base: nextBase });
   };
 
   const isMaxCell = (cell: SelectedCell) =>
@@ -128,20 +132,32 @@ export function BuildRow({ build, gearData, onChange, onRemove, canRemove = true
         ✕
       </button>
       <div className="flex flex-wrap items-end gap-3">
-        <StackedSelect label={PREFIX_LABEL} value={build.prefixId} onChange={v => updateField("prefixId", v)}>
-          {gearData.prefixes.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </StackedSelect>
-        <StackedSelect label={WEAPON_LABEL} value={selectedWeaponId} onChange={handleWeaponChange}>
-          {gearData.weapons.map(weapon => (
-            <option key={weapon.id} value={weapon.id}>{weapon.name}</option>
-          ))}
-        </StackedSelect>
-        <StackedSelect label={SUFFIX_LABEL} value={build.suffixId} onChange={v => updateField("suffixId", v)}>
-          {gearData.suffixes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </StackedSelect>
-        <StackedSelect label={ENCHANT_LABEL} value={otherEnchantId} onChange={setOtherEnchantId}>
-          {OTHER_ENCHANT_TYPES.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
-        </StackedSelect>
+        <StackedSelect
+          label={PREFIX_LABEL}
+          value={build.prefixId}
+          onChange={v => updateField("prefixId", v)}
+          options={PREFIXES.map(p => ({ value: p.id, label: p.name }))}
+          defaultColor="var(--affix-red)"
+        />
+        <StackedSelect
+          label={WEAPON_LABEL}
+          value={selectedWeaponId}
+          onChange={handleWeaponChange}
+          options={gearData.weapons.map(w => ({ value: w.id, label: w.name, color: w.color }))}
+        />
+        <StackedSelect
+          label={SUFFIX_LABEL}
+          value={build.suffixId}
+          onChange={v => updateField("suffixId", v)}
+          options={SUFFIXES.map(s => ({ value: s.id, label: s.name }))}
+          defaultColor="var(--affix-red)"
+        />
+        <StackedSelect
+          label={ENCHANT_LABEL}
+          value={otherEnchantId}
+          onChange={setOtherEnchantId}
+          options={OTHER_ENCHANT_TYPES.map(t => ({ value: t.id, label: t.name }))}
+        />
       </div>
 
       <div className="flex min-w-0 flex-col gap-3">
@@ -488,46 +504,73 @@ function isNearHalfNumber(value: number): boolean {
 }
 
 
+type StackedSelectOption = { value: string; label: string; color?: string };
+
 type StackedSelectProps = {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  children: React.ReactNode;
+  options: StackedSelectOption[];
+  defaultColor?: string;
 };
 
-function StackedSelect({ label, value, onChange, children }: StackedSelectProps) {
-  const selectRef = useRef<HTMLSelectElement>(null);
-  const measurerRef = useRef<HTMLSpanElement>(null);
-  const [selectWidth, setSelectWidth] = useState<number | undefined>(undefined);
+function StackedSelect({ label, value, onChange, options, defaultColor }: StackedSelectProps) {
+  const selected = options.find(option => option.value === value) ?? null;
+  const instanceId = useId();
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
 
-  useLayoutEffect(() => {
-    const select = selectRef.current;
-    const measurer = measurerRef.current;
-    if (!select || !measurer) return;
-    const selectedOption = select.options[select.selectedIndex];
-    measurer.textContent = selectedOption?.textContent ?? "";
-    setSelectWidth(measurer.offsetWidth + 40);
-  }, [value, children]);
+  const styles: StylesConfig<StackedSelectOption, false> = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.data.color ?? defaultColor ?? base.color,
+      fontWeight: 600,
+    }),
+    option: (base, state) => ({
+      ...base,
+      color: state.data.color ?? defaultColor ?? base.color,
+    }),
+  };
 
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{label}</span>
-      <span className="relative inline-block">
-        <select
-          ref={selectRef}
-          style={{ width: selectWidth }}
-          className="h-8 appearance-none rounded border border-neutral-300 bg-white bg-[length:12px_12px] bg-[position:right_0.5rem_center] bg-no-repeat px-2 pr-7 text-sm leading-none bg-[image:url('data:image/svg+xml;utf8,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23737373%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22><polyline%20points=%226%209%2012%2015%2018%209%22/></svg>')] dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
-          value={value}
-          onChange={event => onChange(event.target.value)}
-        >
-          {children}
-        </select>
-        <span
-          ref={measurerRef}
-          aria-hidden="true"
-          className="pointer-events-none invisible absolute left-0 top-0 whitespace-pre text-sm leading-none"
-        />
-      </span>
+      <Select<StackedSelectOption, false>
+        instanceId={instanceId}
+        options={options}
+        value={selected}
+        onChange={(next: SingleValue<StackedSelectOption>) => {
+          if (next) onChange(next.value);
+        }}
+        isSearchable={false}
+        unstyled
+        menuPortalTarget={isMounted ? document.body : null}
+        menuPosition="fixed"
+        styles={{ ...styles, menuPortal: base => ({ ...base, zIndex: 50 }) }}
+        classNames={{
+          control: ({ isFocused }) =>
+            `h-8 min-h-8 rounded border bg-white text-sm dark:bg-neutral-900 ${
+              isFocused
+                ? "border-sky-500 dark:border-sky-400"
+                : "border-neutral-300 dark:border-neutral-600"
+            }`,
+          valueContainer: () => "px-2",
+          singleValue: () => "text-neutral-900 dark:text-neutral-100",
+          dropdownIndicator: () => "px-1 text-neutral-500 dark:text-neutral-400",
+          indicatorSeparator: () => "hidden",
+          menu: () =>
+            "mt-1 rounded border border-neutral-300 bg-white shadow-md dark:border-neutral-600 dark:bg-neutral-900 z-20",
+          menuList: () => "py-1",
+          option: ({ isFocused, isSelected }) =>
+            `px-2 py-1 text-sm cursor-pointer ${
+              isSelected
+                ? "bg-sky-100 dark:bg-sky-900/40"
+                : isFocused
+                  ? "bg-neutral-100 dark:bg-neutral-800"
+                  : ""
+            }`,
+        }}
+      />
     </label>
   );
 }

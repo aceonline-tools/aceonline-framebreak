@@ -11,8 +11,8 @@ export type EnchantType = {
 };
 
 export const OTHER_ENCHANT_TYPES: EnchantType[] = [
-  { id: "xp",     name: "XP",         lowValue: 0.02,   hyperValue: 0.04   },
-  { id: "cx",     name: "CX",         lowValue: 0.0275, hyperValue: 0.0549 },
+  { id: "xp",     name: "Xuyên phá",  lowValue: 0.02,   hyperValue: 0.04   },
+  { id: "cx",     name: "Chính xác",  lowValue: 0.0275, hyperValue: 0.0549 },
   { id: "range",  name: "Cự ly",      lowValue: 0.03,   hyperValue: 0.03   },
   { id: "damage", name: "Sát thương", lowValue: 0,      hyperValue: 0      },
 ];
@@ -117,8 +117,27 @@ export function CellBreakdown({
     enchantsToShow.push(otherEnchant);
   }
 
+  const damageMin = weapon?.values?.damageMin ?? 0;
+  const damageMax = weapon?.values?.damageMax ?? 0;
+  const damageAffixModifier =
+    (prefix?.values.damage ?? 0) + (suffix?.values.damage ?? 0);
+  const damageEnchantType = OTHER_ENCHANT_TYPES.find(type => type.id === "damage");
+  const damageCardModifier =
+    otherEnchant.id === "damage" && damageEnchantType
+      ? damageEnchantType.lowValue * remainingLowSlots +
+        damageEnchantType.hyperValue * remainingHyperSlots
+      : 0;
+  const finalDamageMin = Math.round(
+    damageMin * (1 + damageAffixModifier + damageCardModifier),
+  );
+  const finalDamageMax = Math.round(
+    damageMax * (1 + damageAffixModifier + damageCardModifier),
+  );
+  const hasDamage = damageMin > 0 || damageMax > 0;
+
   const tckWeaponValue = weapon?.values?.tck ?? 0;
-  const tckBaseLabel = tckWeaponValue !== 0 ? `TCK: ${tckWeaponValue}s` : "TCK";
+  const tckBaseLabel = "Tái:";
+  const tckBaseDisplay = tckWeaponValue !== 0 ? `${tckWeaponValue}s` : undefined;
   const tckComputedRate = tckWeaponValue * (1 + tckTotalModifier);
   const tckTotalDisplay =
     tckWeaponValue !== 0
@@ -137,10 +156,45 @@ export function CellBreakdown({
       </div>
       <div className="mb-2 flex flex-wrap items-baseline gap-x-1.5 text-xs">
         <span className="font-bold text-red-600 dark:text-red-400">{prefix?.name ?? "—"}</span>
-        <span className="font-bold text-neutral-900 dark:text-neutral-100">{weapon?.name ?? "—"}</span>
+        <span
+          className={`font-bold ${weapon?.color ? "" : "text-neutral-900 dark:text-neutral-100"}`}
+          style={weapon?.color ? { color: weapon.color } : undefined}
+        >
+          {weapon?.name ?? "—"}
+        </span>
         <span className="font-bold text-red-600 dark:text-red-400">{suffix?.name ?? "—"}</span>
       </div>
       <div className="flex flex-col gap-1 text-neutral-700 dark:text-neutral-200">
+        {hasDamage && (
+          <>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-neutral-500 dark:text-neutral-400">Công:</span>
+              <span className="flex items-baseline whitespace-nowrap text-right text-xs tabular-nums">
+                <DamageSide
+                  base={damageMin}
+                  affixModifier={damageAffixModifier}
+                  cardModifier={damageCardModifier}
+                  final={finalDamageMin}
+                />
+                <span className="mx-1 text-neutral-500 dark:text-neutral-400">~</span>
+                <DamageSide
+                  base={damageMax}
+                  affixModifier={damageAffixModifier}
+                  cardModifier={damageCardModifier}
+                  final={finalDamageMax}
+                />
+              </span>
+            </div>
+            {Number.isFinite(bulletsPerSecond) && (
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-neutral-500 dark:text-neutral-400">Lực bắn:</span>
+                <span className="whitespace-nowrap text-right text-xs font-semibold tabular-nums text-sky-600 dark:text-sky-400">
+                  {Math.round(finalDamageMin * bulletsPerSecond)}–{Math.round(finalDamageMax * bulletsPerSecond)}
+                </span>
+              </div>
+            )}
+          </>
+        )}
         {enchantsToShow.map(enchant => {
           const affixContribution =
             (prefix?.values[enchant.id] ?? 0) + (suffix?.values[enchant.id] ?? 0);
@@ -150,24 +204,22 @@ export function CellBreakdown({
             ? enchant.lowValue * remainingLowSlots + enchant.hyperValue * remainingHyperSlots
             : 0;
           const total = affixContribution + weaponContribution + cardContribution;
-          const showWeaponValueInLabel =
+          const showWeaponBase =
             alwaysShownEnchantIds.includes(
               enchant.id as (typeof alwaysShownEnchantIds)[number],
             ) || weaponContribution !== 0;
-          const enchantLabel = showWeaponValueInLabel
-            ? `${enchant.name}: ${formatUnsignedPercent(weaponContribution)}`
-            : enchant.name;
           return (
             <BreakdownTriple
               key={enchant.id}
               term={
                 <>
-                  {enchantLabel}
+                  {`${enchant.name}:`}
                   {isSelected && (
                     <SlotSuffix low={remainingLowSlots} hyper={remainingHyperSlots} />
                   )}
                 </>
               }
+              baseValue={showWeaponBase ? weaponContribution : undefined}
               affixValue={affixContribution}
               cardValue={cardContribution}
               totalValue={total}
@@ -181,19 +233,45 @@ export function CellBreakdown({
               <SlotSuffix low={lowQuantity} hyper={hyperQuantity} />
             </>
           }
+          baseDisplay={tckBaseDisplay}
           affixValue={tckAffixTotal}
           cardValue={tckCardContribution}
           totalValue={tckTotalModifier}
           totalDisplay={tckTotalDisplay}
         />
+
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-neutral-500 dark:text-neutral-400">Đạn trên giây</span>
-          <span className="whitespace-nowrap text-right font-semibold tabular-nums text-sky-600 dark:text-sky-400">
+          <span className="text-neutral-500 dark:text-neutral-400">Đạn trên giây:</span>
+          <span className="whitespace-nowrap text-right text-xs font-semibold tabular-nums text-sky-600 dark:text-sky-400">
             {Number.isFinite(bulletsPerSecond) ? `${bulletsPerSecond.toFixed(2)} v/s` : "—"}
           </span>
         </div>
       </div>
     </div>
+  );
+}
+
+type DamageSideProps = {
+  base: number;
+  affixModifier: number;
+  cardModifier: number;
+  final: number;
+};
+
+function DamageSide({ base, affixModifier, cardModifier, final }: DamageSideProps) {
+  const affixText = formatSignedPercent(affixModifier);
+  const cardText = formatSignedPercent(cardModifier);
+  return (
+    <span className="inline-flex items-baseline">
+      <span className="text-neutral-900 dark:text-neutral-100">{base}</span>
+      {affixText !== "0%" && (
+        <span className="text-emerald-700 dark:text-emerald-400">[{affixText}]</span>
+      )}
+      {cardText !== "0%" && (
+        <span className="text-amber-700 dark:text-amber-400">[{cardText}]</span>
+      )}
+      <span className="font-semibold text-sky-600 dark:text-sky-400">[{final}]</span>
+    </span>
   );
 }
 
@@ -210,6 +288,8 @@ function SlotSuffix({ low, hyper }: { low: number; hyper: number }) {
 
 type BreakdownTripleProps = {
   term: React.ReactNode;
+  baseValue?: number;
+  baseDisplay?: string;
   affixValue: number;
   cardValue: number;
   totalValue: number;
@@ -218,18 +298,25 @@ type BreakdownTripleProps = {
 
 function BreakdownTriple({
   term,
+  baseValue,
+  baseDisplay,
   affixValue,
   cardValue,
   totalValue,
   totalDisplay,
 }: BreakdownTripleProps) {
+  const baseText =
+    baseDisplay ?? (baseValue !== undefined ? formatUnsignedPercent(baseValue) : undefined);
   const affixText = formatSignedPercent(affixValue);
   const cardText = formatSignedPercent(cardValue);
   const totalText = totalDisplay ?? formatSignedPercent(totalValue);
   return (
     <div className="flex items-baseline justify-between gap-2">
-      <span className="text-neutral-500 dark:text-neutral-400">{term}</span>
+      <span className="whitespace-nowrap text-neutral-500 dark:text-neutral-400">{term}</span>
       <span className="flex items-baseline whitespace-nowrap text-right text-xs tabular-nums">
+        {baseText !== undefined && (
+          <span className="text-neutral-900 dark:text-neutral-100">{baseText}</span>
+        )}
         {affixText !== "0%" && (
           <span className="text-emerald-700 dark:text-emerald-400">[{affixText}]</span>
         )}

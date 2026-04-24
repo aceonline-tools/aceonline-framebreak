@@ -1,5 +1,6 @@
 // lib/calc/a-gear.ts
 import type { Build, GearData } from "@/data/types";
+import { PREFIXES, SUFFIXES } from "@/data/affixes";
 
 export function calculateBulletsPerSecondForAGear(
   build: Build,
@@ -7,8 +8,8 @@ export function calculateBulletsPerSecondForAGear(
   lowQuantity: number,
   hyperQuantity: number,
 ): number {
-  const selectedPrefix = gearData.prefixes.find(p => p.id === build.prefixId);
-  const selectedSuffix = gearData.suffixes.find(s => s.id === build.suffixId);
+  const selectedPrefix = PREFIXES.find(p => p.id === build.prefixId);
+  const selectedSuffix = SUFFIXES.find(s => s.id === build.suffixId);
   const activeLowCard = gearData.lowCards[0];
   const activeHyperCard = gearData.hyperCards[0];
 
