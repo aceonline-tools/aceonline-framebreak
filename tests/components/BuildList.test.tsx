@@ -86,7 +86,7 @@ describe("BuildList", () => {
 
   test("seeds initial rows from the builds query param", () => {
     currentSearchParams = new URLSearchParams(
-      "builds=2.25,none,none"
+      "builds=0.3,none,none"
     );
     render(
       <Suspense fallback={null}>
@@ -95,7 +95,7 @@ describe("BuildList", () => {
     );
 
     expect(screen.getAllByTestId("build-row")).toHaveLength(1);
-    const baseInput = screen.getByLabelText(/tck cơ bản/i) as HTMLInputElement;
-    expect(baseInput.value).toBe("2.25");
+    const weaponSelect = screen.getByLabelText(/vũ khí/i) as HTMLSelectElement;
+    expect(weaponSelect.value).toBe("rantee");
   });
 });

@@ -3,8 +3,9 @@
 export type Affix = {
   id: string;
   name: string;
-  value: number; // signed decimal TCK modifier; -0.15 means -15%
-  bonuses?: Partial<Record<string, number>>; // extra per-enchant-type bonuses, keyed by enchant id
+  // Stat modifiers keyed by stat id. The `tck` key is the TCK modifier
+  // (-0.15 means -15%); other keys are per-enchant bonuses (cx, xp, damage…).
+  values: Partial<Record<string, number>>;
 };
 
 export type EnchantCard = {
@@ -12,6 +13,14 @@ export type EnchantCard = {
   name: string;
   value: number; // signed decimal per card
   maxQuantity: number;
+};
+
+export type Weapon = {
+  id: string;
+  name: string;
+  // Stat values keyed by stat id. `tck` is the base TCK rate (e.g. 0.45),
+  // other keys are baseline stat contributions as decimals (0.9 = +90%).
+  values: Partial<Record<string, number>>;
 };
 
 export type SelectedCell = {
@@ -30,6 +39,7 @@ export type Build = {
 export type GearData = {
   id: "a" | "b" | "i" | "m";
   name: string;
+  weapons: Weapon[];
   prefixes: Affix[];
   suffixes: Affix[];
   lowCards: EnchantCard[];

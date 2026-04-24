@@ -1,22 +1,22 @@
 // tests/components/BuildRow.test.tsx
 import { describe, expect, test, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BuildRow } from "@/app/components/BuildRow";
 import { aGearData, defaultAGearBuild } from "@/data/gears/a-gear";
 
 describe("BuildRow", () => {
-  test("renders inputs for base, prefix, and suffix", () => {
+  test("renders selects for weapon, prefix, and suffix", () => {
     render(
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={() => {}} onRemove={() => {}} />
     );
 
-    expect(screen.getByLabelText(/tck cơ bản/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/vũ khí/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/sup đầu/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/sup đuôi/i)).toBeInTheDocument();
   });
 
-  test("renders a BPS table with the (0,0) cell showing the zero-quantity result", () => {
+  test("renders a BPS table with the (0,0) cell showing the zero-quantity result once the full grid is revealed", async () => {
     const buildWithNoModifiers = {
       base: 1.5,
       prefixId: "none",
@@ -31,12 +31,15 @@ describe("BuildRow", () => {
       />
     );
 
-    // base 1.5 with no modifiers → 3 / 1.5 = 2.00
+    await userEvent.click(screen.getByRole("button", { name: /xem toàn bảng/i }));
+
+    // base 1.5 with no modifiers → 3 / 1.5 = 2.00 at (0,0) — now the bottom-right cell
     const table = screen.getByRole("table");
     const rows = within(table).getAllByRole("row");
-    const firstBodyRow = rows[1]; // row 0 is header
-    const firstDataCell = within(firstBodyRow).getAllByRole("cell")[0];
-    expect(firstDataCell).toHaveTextContent("2.00");
+    const lastBodyRow = rows[rows.length - 1];
+    const lastRowCells = within(lastBodyRow).getAllByRole("cell");
+    const zeroZeroCell = lastRowCells[lastRowCells.length - 1];
+    expect(zeroZeroCell).toHaveTextContent("2.00");
   });
 
   test("calls onChange when the user picks a new prefix", async () => {
@@ -45,19 +48,18 @@ describe("BuildRow", () => {
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={handleChange} onRemove={() => {}} />
     );
 
-    await userEvent.selectOptions(screen.getByLabelText(/sup đầu/i), "prefix-13");
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ prefixId: "prefix-13" }));
+    await userEvent.selectOptions(screen.getByLabelText(/sup đầu/i), "attack");
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ prefixId: "attack" }));
   });
 
-  test("calls onChange when the user edits the base", () => {
+  test("calls onChange with the weapon's base when the user picks a new weapon", async () => {
     const handleChange = vi.fn();
     render(
       <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={handleChange} onRemove={() => {}} />
     );
 
-    const baseInput = screen.getByLabelText(/tck cơ bản/i);
-    fireEvent.change(baseInput, { target: { value: "2.5" } });
-    expect(handleChange).toHaveBeenLastCalledWith(expect.objectContaining({ base: 2.5 }));
+    await userEvent.selectOptions(screen.getByLabelText(/vũ khí/i), "rantee");
+    expect(handleChange).toHaveBeenLastCalledWith(expect.objectContaining({ base: 0.3 }));
   });
 
   test("calls onRemove when the delete button is clicked", async () => {
@@ -70,42 +72,46 @@ describe("BuildRow", () => {
     expect(handleRemove).toHaveBeenCalled();
   });
 
-  test("keeps the breakdown open at the max cell by default and reverts to it when the same cell is clicked twice", async () => {
-    const buildWithModifiers = {
+  test("does not render a CellBreakdown — it now lives in the ComparisonPanel", () => {
+    render(
+      <BuildRow build={defaultAGearBuild} gearData={aGearData} onChange={() => {}} onRemove={() => {}} />
+    );
+    expect(screen.queryByTestId("cell-breakdown")).not.toBeInTheDocument();
+  });
+
+  test("toggling a cell in the full grid emits an updated selectedCells array", async () => {
+    const handleChange = vi.fn();
+    const buildWithCellSelected = {
       base: 0.45,
-      prefixId: "prefix-13",
-      suffixId: "suffix-14",
+      prefixId: "none",
+      suffixId: "none",
+      selectedCells: [{ lowQuantity: 10, hyperQuantity: 6 }],
     };
     render(
       <BuildRow
-        build={buildWithModifiers}
+        build={buildWithCellSelected}
         gearData={aGearData}
-        onChange={() => {}}
+        onChange={handleChange}
         onRemove={() => {}}
       />
     );
 
-    const initialBreakdown = screen.getByTestId("cell-breakdown");
-    expect(initialBreakdown).toBeInTheDocument();
-    // default selected cell is (low=10, hyper=6) using the Vietnamese labels
-    expect(initialBreakdown).toHaveTextContent("Tck thường × 10");
-    expect(initialBreakdown).toHaveTextContent("Tck DB × 6");
+    await userEvent.click(screen.getByRole("button", { name: /xem toàn bảng/i }));
+    const allRows = within(screen.getByRole("table")).getAllByRole("row");
+    const lastBodyRow = allRows[allRows.length - 1]; // hyper=0 row
+    const lastRowCells = within(lastBodyRow).getAllByRole("cell");
+    const zeroZeroCell = lastRowCells[lastRowCells.length - 1]; // low=0, hyper=0
+    const zeroZeroCellButton = within(zeroZeroCell).getByRole("button");
 
-    const firstBodyRow = within(screen.getByRole("table")).getAllByRole("row")[1];
-    const firstDataCell = within(firstBodyRow).getAllByRole("cell")[0];
-    const firstCellButton = within(firstDataCell).getByRole("button");
+    await userEvent.click(zeroZeroCellButton);
 
-    await userEvent.click(firstCellButton);
-    const switchedBreakdown = screen.getByTestId("cell-breakdown");
-    expect(switchedBreakdown).toHaveTextContent("Tck thường × 0");
-    expect(switchedBreakdown).toHaveTextContent("Tck DB × 0");
-    // Total modifier at (0,0) with prefix -13% + suffix -14% = -27%
-    expect(switchedBreakdown).toHaveTextContent("-27%");
-
-    // Clicking the same non-max cell again reverts selection to the max cell
-    await userEvent.click(firstCellButton);
-    const revertedBreakdown = screen.getByTestId("cell-breakdown");
-    expect(revertedBreakdown).toHaveTextContent("Tck thường × 10");
-    expect(revertedBreakdown).toHaveTextContent("Tck DB × 6");
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        selectedCells: expect.arrayContaining([
+          { lowQuantity: 10, hyperQuantity: 6 },
+          { lowQuantity: 0, hyperQuantity: 0 },
+        ]),
+      }),
+    );
   });
 });

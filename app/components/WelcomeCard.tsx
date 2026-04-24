@@ -34,11 +34,11 @@ export function WelcomeCard() {
         type="button"
         onClick={openCard}
         aria-expanded={isCardOpen}
-        className="fixed right-3 top-3 z-40 cursor-pointer rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-medium text-neutral-600 shadow-sm hover:bg-neutral-100"
+        className="fixed right-3 top-3 z-40 cursor-pointer rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-medium text-neutral-600 shadow-sm hover:bg-neutral-100 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
       >
         ? Hướng dẫn
       </button>
-      <p className="text-xs italic text-neutral-500">
+      <p className="text-xs italic text-neutral-500 dark:text-neutral-400">
         Lưu ý: công cụ không chính thức, do cá nhân phát triển. Kết quả chỉ mang tính tham khảo
         và có thể sai số nhẹ so với thực tế trong game.
       </p>
@@ -47,17 +47,17 @@ export function WelcomeCard() {
         <section
           role="region"
           aria-label="Hướng dẫn sử dụng"
-          className="relative rounded-lg border border-sky-200 bg-sky-50 p-4 pr-10 text-sm text-neutral-700"
+          className="relative rounded-lg border border-sky-200 bg-sky-50 p-4 pr-10 text-sm text-neutral-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-neutral-200"
         >
           <button
             type="button"
             aria-label="Đóng hướng dẫn"
             onClick={closeCard}
-            className="absolute right-2 top-2 cursor-pointer rounded px-2 py-0.5 text-neutral-500 hover:bg-sky-100 hover:text-neutral-700"
+            className="absolute right-2 top-2 cursor-pointer rounded px-2 py-0.5 text-neutral-500 hover:bg-sky-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-sky-900/40 dark:hover:text-neutral-200"
           >
             ✕
           </button>
-          <h2 className="mb-2 text-base font-semibold text-neutral-900">
+          <h2 className="mb-2 text-base font-semibold text-neutral-900 dark:text-neutral-50">
             Chào mừng đến với Ace Online — Tính đạn AG
           </h2>
           <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed">
@@ -95,7 +95,7 @@ export function WelcomeCard() {
             <button
               type="button"
               onClick={closeCard}
-              className="cursor-pointer rounded bg-sky-600 px-3 py-1 text-sm font-medium text-white hover:bg-sky-700"
+              className="cursor-pointer rounded bg-sky-600 px-3 py-1 text-sm font-medium text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
             >
               Đã hiểu
             </button>

@@ -52,10 +52,10 @@ export function StatsBar() {
   };
 
   return (
-    <div className="flex items-center gap-4 text-xs text-neutral-500">
+    <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
       <span>
         Lượt xem:{" "}
-        <span className="font-semibold text-neutral-700 tabular-nums">
+        <span className="font-semibold text-neutral-700 tabular-nums dark:text-neutral-200">
           {stats ? stats.viewCount.toLocaleString() : "—"}
         </span>
       </span>
@@ -67,16 +67,16 @@ export function StatsBar() {
         className={
           "group inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors " +
           (hasVoted
-            ? "cursor-default border-rose-300 bg-rose-50 text-rose-600"
+            ? "cursor-default border-rose-300 bg-rose-50 text-rose-600 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
             : isSubmittingVote
-              ? "cursor-wait border-neutral-300 text-neutral-400"
-              : "cursor-pointer border-neutral-300 text-neutral-600 hover:bg-neutral-100")
+              ? "cursor-wait border-neutral-300 text-neutral-400 dark:border-neutral-600 dark:text-neutral-500"
+              : "cursor-pointer border-neutral-300 text-neutral-600 hover:bg-neutral-100 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800")
         }
       >
         {isSubmittingVote ? (
           <span
             aria-hidden="true"
-            className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-500"
+            className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-500 dark:border-neutral-600 dark:border-t-neutral-300"
           />
         ) : (
           <span

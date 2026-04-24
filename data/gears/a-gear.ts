@@ -5,18 +5,26 @@ import { calculateBulletsPerSecondForAGear } from "@/lib/calc/a-gear";
 export const aGearData: GearData = {
   id: "a",
   name: "A-Gear",
+  weapons: [
+    { id: "bs",     name: "Big Smash", values: { tck: 0.45, xp: 0, cx: 0.9 } },
+    { id: "rantee", name: "Rantee",    values: { tck: 0.3,  xp: 0, cx: 0.8 } },
+  ],
   prefixes: [
-    { id: "none",      name: "0%",              value:  0    },
-    { id: "prefix-5",  name: "-5% (+15% XP)",   value: -0.05, bonuses: { xp: 0.15 } },
-    { id: "prefix-13", name: "-13%",            value: -0.13 },
-    { id: "prefix-14", name: "-14%",            value: -0.14 },
-    { id: "prefix-15", name: "-15%",            value: -0.15 },
+    { id: "none",         name: "None",          values: {}                                  },
+    { id: "bio",          name: "Bio",           values: { tck: -0.15, cx: 0.14 }            },
+    { id: "attack",       name: "Attack",        values: { tck: -0.14, cx: 0.15 }            },
+    { id: "squire",       name: "Squire",        values: { tck: -0.15, damage: 0.14 }        },
+    { id: "attack-luck",  name: "Attack Luck",   values: { tck: -0.14, cx: 0.15, damage: 0.05 } },
+    { id: "squire-luck",  name: "Squire Luck",   values: { tck: -0.15, cx: 0.05, damage: 0.14 } },
+    { id: "bandit",       name: "Bandit",        values: { tck: -0.05, xp: 0.15 }            },
   ],
   suffixes: [
-    { id: "none",      name: "0%",   value:  0    },
-    { id: "suffix-13", name: "-13%", value: -0.13 },
-    { id: "suffix-14", name: "-14%", value: -0.14 },
-    { id: "suffix-15", name: "-15%", value: -0.15 },
+    { id: "none",         name: "None",              values: {}                                  },
+    { id: "bio",          name: "Of Bio",            values: { tck: -0.15, cx: 0.14 }            },
+    { id: "attack",       name: "Of Attack",         values: { tck: -0.14, cx: 0.15 }            },
+    { id: "squire",       name: "Of Squire",         values: { tck: -0.15, damage: 0.14 }        },
+    { id: "attack-luck",  name: "Of Attack Luck",    values: { tck: -0.14, cx: 0.15, damage: 0.05 } },
+    { id: "squire-luck",  name: "Of Squire Luck",    values: { tck: -0.15, cx: 0.05, damage: 0.14 } },
   ],
   lowCards: [
     { id: "low-card", name: "-2%", value: -0.02, maxQuantity: 10 },
@@ -30,11 +38,11 @@ export const aGearData: GearData = {
 
 export const defaultAGearBuild: Build = {
   base:           0.45,
-  prefixId:       "prefix-15",
-  suffixId:       "suffix-15",
+  prefixId:       "bio",
+  suffixId:       "bio",
   selectedCells: [
     { lowQuantity: 10, hyperQuantity: 2 },
     { lowQuantity: 10, hyperQuantity: 6 },
   ],
-  otherEnchantId: "xp",
+  otherEnchantId: "cx",
 };

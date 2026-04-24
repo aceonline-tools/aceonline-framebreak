@@ -6,8 +6,9 @@ import type { GearData } from "@/data/types";
 const sampleGearData: GearData = {
   id: "a",
   name: "A-Gear",
-  prefixes:   [{ id: "rapid",      name: "Rapid",      value: -0.10 }],
-  suffixes:   [{ id: "burst",      name: "Burst",      value: -0.15 }],
+  weapons:    [{ id: "bs",         name: "BS",         values: { tck: 1.5 } }],
+  prefixes:   [{ id: "rapid",      name: "Rapid",      values: { tck: -0.10 } }],
+  suffixes:   [{ id: "burst",      name: "Burst",      values: { tck: -0.15 } }],
   lowCards:   [{ id: "low-card",   name: "Low Card",   value: -0.02, maxQuantity: 10 }],
   hyperCards: [{ id: "hyper-card", name: "Hyper Card", value: -0.05, maxQuantity: 7 }],
   calculateBulletsPerSecond: (build, data, lowQuantity, hyperQuantity) =>

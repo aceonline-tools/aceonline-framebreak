@@ -7,6 +7,7 @@ import type { Build } from "@/data/types";
 import { aGearData, defaultAGearBuild } from "@/data/gears/a-gear";
 import { encodeBuildsToQuery, decodeBuildsFromQuery } from "@/lib/url";
 import { BuildRow } from "./BuildRow";
+import { ComparisonPanel } from "./ComparisonPanel";
 
 const QUERY_KEY = "builds";
 
@@ -89,11 +90,13 @@ export function BuildList() {
         />
       ))}
 
+      <ComparisonPanel entries={identifiedBuilds} gearData={aGearData} />
+
       <div className="flex justify-end gap-2">
         <button
           type="button"
           onClick={appendBuild}
-          className="cursor-pointer rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
+          className="cursor-pointer rounded border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100 dark:border-neutral-600 dark:hover:bg-neutral-800"
         >
           + Add build
         </button>
@@ -104,8 +107,8 @@ export function BuildList() {
           className={
             "cursor-pointer rounded border px-3 py-1 text-sm transition-colors " +
             (hasJustCopiedLink
-              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-              : "border-neutral-300 hover:bg-neutral-100")
+              ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-400 dark:bg-emerald-950 dark:text-emerald-300"
+              : "border-neutral-300 hover:bg-neutral-100 dark:border-neutral-600 dark:hover:bg-neutral-800")
           }
         >
           {hasJustCopiedLink ? "Đã copy ✓" : "Copy link"}

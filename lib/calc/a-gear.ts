@@ -23,8 +23,9 @@ export function calculateBulletsPerSecondForAGear(
     activeLowCard.value   * lowQuantity +
     activeHyperCard.value * hyperQuantity;
 
-  const totalModifier =
-    selectedPrefix.value + selectedSuffix.value + enchantModifier;
+  const prefixTckModifier = selectedPrefix.values.tck ?? 0;
+  const suffixTckModifier = selectedSuffix.values.tck ?? 0;
+  const totalModifier = prefixTckModifier + suffixTckModifier + enchantModifier;
 
   const divisor = build.base * (1 + totalModifier);
   if (divisor <= 0) return NaN;
